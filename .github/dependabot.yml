@@ -1,0 +1,27 @@
+# Please see the documentation for all configuration options:
+# https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+# Gradle note: The dependabot does not find the versions in gradle.properties,
+# but constants in the build.gradle file worked.
+
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    target-branch: "main"
+    assignees:
+      - "findusl"
+    reviewers:
+      - "findusl"
+    open-pull-requests-limit: 10
+    ignore:
+      # Allow 8.11.x bugfixes, block 8.12+ (Intellij IDE Plugin support)
+      - dependency-name: "com.android.tools.build:gradle"
+        versions:
+          - ">= 8.12.0"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"

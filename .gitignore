@@ -1,5 +1,19 @@
-# Ignore Gradle project-specific cache directory
+*.iml
+.kotlin
 .gradle
-
-# Ignore Gradle build output directory
-build
+**/build/
+xcuserdata
+!src/**/build/
+local.properties
+.idea
+.DS_Store
+captures
+.externalNativeBuild
+.cxx
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+**/*.private.env.json
