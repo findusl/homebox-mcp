@@ -23,6 +23,7 @@ dependencies {
 	testImplementation(libs.mockito.kotlin)
 	testImplementation(libs.kotlinx.coroutines.test)
 	testImplementation(libs.ktor.client.mock)
+	testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 kotlin {

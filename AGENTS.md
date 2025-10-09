@@ -1,4 +1,5 @@
 Before committing run ktlintFormat.
+Use tabs for indentation in all Kotlin source and Gradle Kotlin DSL files.
 
 Use `openapi_helper.py` to inspect the Homebox OpenAPI spec without loading the full file into context.
 Examples:
