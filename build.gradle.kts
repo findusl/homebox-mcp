@@ -1,14 +1,17 @@
+import org.jlleitschuh.gradle.ktlint.KtlintExtension
+
 plugins {
-	// Apply once at the root; individual modules reuse the configured instance.
-	alias(libs.plugins.ktlint)
+    alias(libs.plugins.ktlint) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
 }
 
-allprojects {
-	apply(plugin = rootProject.libs.plugins.ktlint.get().pluginId)
-
-	ktlint {
-		filter {
-			exclude("**/generated/**")
-		}
-	}
+subprojects {
+    pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
+        apply(plugin = rootProject.libs.plugins.ktlint.get().pluginId)
+        extensions.configure<KtlintExtension> {
+            filter {
+                exclude("**/generated/**")
+            }
+        }
+    }
 }
