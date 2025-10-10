@@ -37,8 +37,11 @@ class HomeboxClient(
 		return json.decodeFromString(LocationsSerializer, payload)
 	}
 
-	suspend fun getLocationTree(): List<TreeItem> {
+	suspend fun getLocationTree(withItems: Boolean = false): List<TreeItem> {
 		val response = httpClient.get("$baseUrl/v1/locations/tree") {
+			if (withItems) {
+				parameter("withItems", true)
+			}
 			accept(ContentType.Application.Json)
 			header(HttpHeaders.Authorization, "Bearer $apiToken")
 		}

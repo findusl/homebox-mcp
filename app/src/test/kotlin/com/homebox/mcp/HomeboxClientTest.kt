@@ -77,6 +77,28 @@ class HomeboxClientTest {
 		}
 
 	@Test
+	fun `getLocationTree forwards withItems parameter`() =
+		runTest {
+			var capturedUrl: Url? = null
+			val engine = MockEngine { request ->
+				capturedUrl = request.url
+				respond(
+					content = ByteReadChannel("[]"),
+					status = HttpStatusCode.OK,
+					headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+				)
+			}
+
+			val httpClient = HttpClient(engine)
+			val client = HomeboxClient(httpClient, "https://example.test", "token")
+
+			client.getLocationTree(withItems = true)
+
+			val url = requireNotNull(capturedUrl)
+			assertEquals("true", url.parameters["withItems"])
+		}
+
+	@Test
 	fun `constructor rejects blank configuration`() {
 		val httpClient = HttpClient(MockEngine { error("unused") })
 
