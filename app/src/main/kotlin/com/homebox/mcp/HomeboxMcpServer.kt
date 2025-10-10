@@ -6,7 +6,7 @@ import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.server.ServerOptions
 
 fun createHomeboxServer(client: HomeboxClient): Server {
-	val listTool = ListLocationsTool(client)
+	val locationsResource = LocationsResource(client)
 	val createTool = CreateLocationTool(client)
 
 	return Server(
@@ -17,11 +17,17 @@ fun createHomeboxServer(client: HomeboxClient): Server {
 		ServerOptions(
 			capabilities = ServerCapabilities(
 				tools = ServerCapabilities.Tools(listChanged = null),
+				resources = ServerCapabilities.Resources(subscribe = null, listChanged = null),
 			),
 		),
 	).apply {
-		addTool(listTool.name, listTool.description, listTool.inputSchema) { request ->
-			listTool.execute(request.arguments)
+		addResource(
+			locationsResource.uri,
+			locationsResource.name,
+			locationsResource.description,
+			locationsResource.mimeType,
+		) { _ ->
+			locationsResource.read()
 		}
 		addTool(createTool.name, createTool.description, createTool.inputSchema) { request ->
 			createTool.execute(request.arguments)
