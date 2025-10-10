@@ -6,7 +6,8 @@ import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.server.ServerOptions
 
 fun createHomeboxServer(client: HomeboxClient): Server {
-	val tool = ListLocationsTool(client)
+	val listTool = ListLocationsTool(client)
+	val createTool = CreateLocationTool(client)
 
 	return Server(
 		Implementation(
@@ -19,8 +20,11 @@ fun createHomeboxServer(client: HomeboxClient): Server {
 			),
 		),
 	).apply {
-		addTool(tool.name, tool.description, tool.inputSchema) { request ->
-			tool.execute(request.arguments)
+		addTool(listTool.name, listTool.description, listTool.inputSchema) { request ->
+			listTool.execute(request.arguments)
+		}
+		addTool(createTool.name, createTool.description, createTool.inputSchema) { request ->
+			createTool.execute(request.arguments)
 		}
 	}
 }
