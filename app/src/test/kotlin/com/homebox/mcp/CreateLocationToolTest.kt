@@ -95,4 +95,37 @@ class CreateLocationToolTest {
 				verify(client).createLocation(name = "Shelf A", parentId = storageSummary.id, description = "Deep shelf")
 			}
 		}
+
+	@Test
+	fun `avoids creating duplicate sibling locations`() =
+		runTest {
+			whenever(client.getLocationTree()).thenReturn(
+				listOf(
+					TreeItem(
+						id = "root",
+						name = "Home",
+						type = "location",
+						children = listOf(
+							TreeItem(
+								id = "storage-id",
+								name = "Storage",
+								type = "location",
+							),
+						),
+					),
+				),
+			)
+
+			val result = tool.execute(
+				buildJsonObject {
+					put("path", JsonPrimitive("Home/Storage"))
+				},
+			)
+
+			val text = (result.content.first() as TextContent).text ?: ""
+
+			assertTrue(text.contains("already exists"))
+			verify(client).getLocationTree()
+			verify(client, never()).createLocation(any(), anyOrNull(), anyOrNull())
+		}
 }

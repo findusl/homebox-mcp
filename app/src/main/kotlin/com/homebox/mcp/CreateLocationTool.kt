@@ -67,25 +67,30 @@ class CreateLocationTool(private val client: HomeboxClient) {
 		var currentChildren = tree.filterLocations()
 		var currentName: String? = null
 		val createdLocations = mutableListOf<LocationSummary>()
+		val knownLocationsByParent = mutableMapOf<String?, MutableMap<String, KnownLocation>>()
 
 		segments.forEachIndexed { index, segment ->
-			val existing = currentChildren.firstOrNull { it.matchesName(segment) }
-			if (existing != null) {
-				currentParentId = existing.id
-				currentName = existing.name
-				currentChildren = existing.children.filterLocations()
-			} else {
-				val isLast = index == segments.lastIndex
-				val created = client.createLocation(
-					name = segment,
-					parentId = currentParentId,
-					description = if (isLast) description else null,
-				)
-				createdLocations += created
-				currentParentId = created.id
-				currentName = created.name
-				currentChildren = emptyList()
+			knownLocationsByParent.ensureParentChildren(currentParentId, currentChildren)
+			val normalizedSegment = segment.lowercase()
+			val knownSibling = knownLocationsByParent[currentParentId]?.get(normalizedSegment)
+			if (knownSibling != null) {
+				currentParentId = knownSibling.id
+				currentName = knownSibling.name
+				currentChildren = knownSibling.children.filterLocations()
+				return@forEachIndexed
 			}
+
+			val isLast = index == segments.lastIndex
+			val created = client.createLocation(
+				name = segment,
+				parentId = currentParentId,
+				description = if (isLast) description else null,
+			)
+			createdLocations += created
+			knownLocationsByParent.recordCreated(currentParentId, created)
+			currentParentId = created.id
+			currentName = created.name
+			currentChildren = emptyList()
 		}
 
 		val finalName = currentName ?: segments.last()
@@ -110,9 +115,41 @@ class CreateLocationTool(private val client: HomeboxClient) {
 
 	private fun List<TreeItem>.filterLocations(): List<TreeItem> = filter { it.type.equals(LOCATION_TYPE, ignoreCase = true) }
 
-	private fun TreeItem.matchesName(name: String): Boolean = type.equals(LOCATION_TYPE, ignoreCase = true) && this.name.equals(name, ignoreCase = true)
+	private fun MutableMap<String?, MutableMap<String, KnownLocation>>.ensureParentChildren(parentId: String?, children: List<TreeItem>) {
+		if (children.isEmpty()) {
+			return
+		}
+		val parentMap = getOrPut(parentId) { mutableMapOf() }
+		children
+			.filter { it.type.equals(LOCATION_TYPE, ignoreCase = true) }
+			.forEach { child ->
+				val key = child.name.lowercase()
+				parentMap.putIfAbsent(
+					key,
+					KnownLocation(
+						id = child.id,
+						name = child.name,
+						children = child.children,
+					),
+				)
+			}
+	}
+
+	private fun MutableMap<String?, MutableMap<String, KnownLocation>>.recordCreated(parentId: String?, created: LocationSummary) {
+		val parentMap = getOrPut(parentId) { mutableMapOf() }
+		parentMap.putIfAbsent(
+			created.name.lowercase(),
+			KnownLocation(id = created.id, name = created.name, children = emptyList()),
+		)
+	}
 
 	private companion object {
 		private const val LOCATION_TYPE = "location"
 	}
+
+	private data class KnownLocation(
+		val id: String,
+		val name: String,
+		val children: List<TreeItem>,
+	)
 }
