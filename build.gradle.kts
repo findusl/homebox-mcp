@@ -1,17 +1,27 @@
-import org.jlleitschuh.gradle.ktlint.KtlintExtension
-
 plugins {
-    alias(libs.plugins.ktlint) apply false
+    alias(libs.plugins.ktlint)
     alias(libs.plugins.kotlin.jvm) apply false
 }
 
 subprojects {
     pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
         apply(plugin = rootProject.libs.plugins.ktlint.get().pluginId)
-        extensions.configure<KtlintExtension> {
-            filter {
-                exclude("**/generated/**")
-            }
-        }
+
+
+		ktlint {
+			kotlinScriptAdditionalPaths {
+				include(
+					fileTree(
+						mapOf(
+							"dir" to projectDir,
+							"include" to listOf("*.gradle.kts", "gradle/**/*.gradle.kts"),
+						),
+					),
+				)
+			}
+			filter {
+				exclude("**/generated/**")
+			}
+		}
     }
 }
