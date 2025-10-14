@@ -25,3 +25,9 @@ subprojects {
 		}
     }
 }
+
+tasks.register("containerMaintenance") {
+	group = "build"
+	description = "Builds the classes to ensure dependencies are loaded and classes cached for when the agent is running"
+	dependsOn(":app:testClasses")
+}
