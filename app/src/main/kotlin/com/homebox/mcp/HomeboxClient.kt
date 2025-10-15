@@ -67,6 +67,28 @@ class HomeboxClient(
 		return json.decodeFromString(LocationSummary.serializer(), payload)
 	}
 
+	suspend fun listItems(locationIds: List<String>? = null, pageSize: Int = 100): ItemPage {
+		val response = httpClient.get("$baseUrl/v1/items") {
+			parameter("pageSize", pageSize)
+			locationIds?.forEach { parameter("locations", it) }
+			accept(ContentType.Application.Json)
+			header(HttpHeaders.Authorization, "Bearer $apiToken")
+		}
+
+		val payload = response.bodyAsText()
+		return json.decodeFromString(ItemPage.serializer(), payload)
+	}
+
+	suspend fun getLocation(id: String): LocationDetails {
+		val response = httpClient.get("$baseUrl/v1/locations/$id") {
+			accept(ContentType.Application.Json)
+			header(HttpHeaders.Authorization, "Bearer $apiToken")
+		}
+
+		val payload = response.bodyAsText()
+		return json.decodeFromString(LocationDetails.serializer(), payload)
+	}
+
 	private companion object {
 		val LocationsSerializer = ListSerializer(Location.serializer())
 		val LocationTreeSerializer = ListSerializer(TreeItem.serializer())
@@ -101,4 +123,29 @@ private data class LocationCreateRequest(
 	val name: String,
 	val description: String? = null,
 	val parentId: String? = null,
+)
+
+@Serializable
+data class ItemSummary(
+	val id: String,
+	val name: String,
+	val description: String? = null,
+	val quantity: Int? = null,
+	val location: LocationSummary? = null,
+)
+
+@Serializable
+data class ItemPage(
+	val items: List<ItemSummary>,
+	val page: Int,
+	val pageSize: Int,
+	val total: Int,
+)
+
+@Serializable
+data class LocationDetails(
+	val id: String,
+	val name: String,
+	val description: String? = null,
+	val parent: LocationSummary? = null,
 )

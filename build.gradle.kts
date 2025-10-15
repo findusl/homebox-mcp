@@ -1,12 +1,11 @@
 plugins {
-    alias(libs.plugins.ktlint)
-    alias(libs.plugins.kotlin.jvm) apply false
+	alias(libs.plugins.ktlint)
+	alias(libs.plugins.kotlin.jvm) apply false
 }
 
 subprojects {
-    pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
-        apply(plugin = rootProject.libs.plugins.ktlint.get().pluginId)
-
+	pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
+		apply(plugin = rootProject.libs.plugins.ktlint.get().pluginId)
 
 		ktlint {
 			kotlinScriptAdditionalPaths {
@@ -23,7 +22,7 @@ subprojects {
 				exclude("**/generated/**")
 			}
 		}
-    }
+	}
 }
 
 tasks.register("containerMaintenance") {

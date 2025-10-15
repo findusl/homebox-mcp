@@ -99,6 +99,85 @@ class HomeboxClientTest {
 		}
 
 	@Test
+	fun `listItems requests and parses response`() =
+		runTest {
+			var capturedRequest: HttpRequestData? = null
+			val engine = MockEngine { request ->
+				capturedRequest = request
+				respond(
+					content = ByteReadChannel(
+"""{"items":[{"id":"item-1","name":"Hammer","quantity":2,"description":"Steel","location":{"id":"loc-1","name":"Shelf A"}}],"page":1,"pageSize":100,"total":1}""",
+					),
+					status = HttpStatusCode.OK,
+					headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+				)
+			}
+
+			val httpClient = HttpClient(engine) {
+				install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+			}
+
+			val client = HomeboxClient(httpClient, "https://example.test", "token")
+
+			val page = client.listItems(pageSize = 100)
+
+			val request = requireNotNull(capturedRequest)
+			assertEquals("/v1/items", request.url.encodedPath)
+			assertEquals("100", request.url.parameters["pageSize"])
+			assertEquals("Bearer token", request.headers[HttpHeaders.Authorization])
+			assertEquals(1, page.items.size)
+			assertEquals("Hammer", page.items.first().name)
+			assertEquals("Shelf A", page.items.first().location?.name)
+			assertEquals(1, page.total)
+		}
+
+	@Test
+	fun `listItems forwards location filters`() =
+		runTest {
+			var capturedUrl: Url? = null
+			val engine = MockEngine { request ->
+				capturedUrl = request.url
+				respond(
+					content = ByteReadChannel("""{"items":[],"page":1,"pageSize":100,"total":0}"""),
+					status = HttpStatusCode.OK,
+					headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+				)
+			}
+
+			val httpClient = HttpClient(engine)
+			val client = HomeboxClient(httpClient, "https://example.test", "token")
+
+			client.listItems(locationIds = listOf("loc-1", "loc-2"))
+
+			val url = requireNotNull(capturedUrl)
+			assertEquals(listOf("loc-1", "loc-2"), url.parameters.getAll("locations"))
+		}
+
+	@Test
+	fun `getLocation fetches details`() =
+		runTest {
+			var capturedRequest: HttpRequestData? = null
+			val engine = MockEngine { request ->
+				capturedRequest = request
+				respond(
+					content = ByteReadChannel("""{"id":"loc-1","name":"Shelf A","parent":{"id":"root","name":"Home"}}"""),
+					status = HttpStatusCode.OK,
+					headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+				)
+			}
+
+			val httpClient = HttpClient(engine)
+			val client = HomeboxClient(httpClient, "https://example.test", "token")
+
+			val location = client.getLocation("loc-1")
+
+			val request = requireNotNull(capturedRequest)
+			assertEquals("/v1/locations/loc-1", request.url.encodedPath)
+			assertEquals("Shelf A", location.name)
+			assertEquals("root", location.parent?.id)
+		}
+
+	@Test
 	fun `constructor rejects blank configuration`() {
 		val httpClient = HttpClient(MockEngine { error("unused") })
 
