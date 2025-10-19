@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -136,7 +137,7 @@ class ItemsResourceTest {
 			val result = resource.read(request)
 
 			verify(client).getLocationTree()
-			verify(client, never()).listItems(any(), any())
+			verify(client, never()).listItems(anyOrNull(), anyOrNull(), any())
 
 			val contents = result.contents.single() as TextResourceContents
 			val payload = requireNotNull(contents.text)
