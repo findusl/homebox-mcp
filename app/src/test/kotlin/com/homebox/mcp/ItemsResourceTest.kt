@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -28,7 +29,7 @@ class ItemsResourceTest {
 	@Test
 	fun `read without query returns items with cached location paths`() =
 		runTest {
-			whenever(client.listItems(locationIds = null, pageSize = 100)).thenReturn(
+			whenever(client.listItems(page = 1, locationIds = null, pageSize = 100)).thenReturn(
 				ItemPage(
 					items = listOf(
 						ItemSummary(
@@ -61,7 +62,7 @@ class ItemsResourceTest {
 
 			val result = resource.read(ReadResourceRequest("resource://homebox/items", buildJsonObject { }))
 
-			verify(client).listItems(locationIds = null, pageSize = 100)
+			verify(client).listItems(page = 1, locationIds = null, pageSize = 100)
 			verify(client).getLocation("loc-1")
 			verify(client).getLocation("loc-0")
 			verify(client).getLocation("root")
@@ -90,7 +91,7 @@ class ItemsResourceTest {
 					),
 				),
 			)
-			whenever(client.listItems(locationIds = listOf("loc-2"), pageSize = 100)).thenReturn(
+			whenever(client.listItems(page = 1, locationIds = listOf("loc-2"), pageSize = 100)).thenReturn(
 				ItemPage(
 					items = listOf(
 						ItemSummary(
@@ -113,7 +114,7 @@ class ItemsResourceTest {
 			val result = resource.read(request)
 
 			verify(client).getLocationTree()
-			verify(client).listItems(locationIds = listOf("loc-2"), pageSize = 100)
+			verify(client).listItems(page = 1, locationIds = listOf("loc-2"), pageSize = 100)
 
 			val contents = result.contents.single() as TextResourceContents
 			val payload = requireNotNull(contents.text)
@@ -136,7 +137,7 @@ class ItemsResourceTest {
 			val result = resource.read(request)
 
 			verify(client).getLocationTree()
-			verify(client, never()).listItems(any(), any())
+			verify(client, never()).listItems(any(), anyOrNull(), any())
 
 			val contents = result.contents.single() as TextResourceContents
 			val payload = requireNotNull(contents.text)
