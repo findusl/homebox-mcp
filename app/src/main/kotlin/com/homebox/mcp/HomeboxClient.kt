@@ -5,6 +5,7 @@ import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
@@ -67,9 +68,14 @@ class HomeboxClient(
 		return json.decodeFromString(LocationSummary.serializer(), payload)
 	}
 
-	suspend fun listItems(locationIds: List<String>? = null, pageSize: Int = 100): ItemPage {
+	suspend fun listItems(
+		query: String? = null,
+		locationIds: List<String>? = null,
+		pageSize: Int = 100,
+	): ItemPage {
 		val response = httpClient.get("$baseUrl/v1/items") {
 			parameter("pageSize", pageSize)
+			query?.takeIf { it.isNotBlank() }?.let { parameter("q", it) }
 			locationIds?.forEach { parameter("locations", it) }
 			accept(ContentType.Application.Json)
 			header(HttpHeaders.Authorization, "Bearer $apiToken")
@@ -77,6 +83,36 @@ class HomeboxClient(
 
 		val payload = response.bodyAsText()
 		return json.decodeFromString(ItemPage.serializer(), payload)
+	}
+
+	suspend fun createItem(
+		name: String,
+		locationId: String,
+		description: String? = null,
+	): ItemSummary {
+		require(name.isNotBlank()) { "Item name must not be blank" }
+		require(locationId.isNotBlank()) { "Location ID must not be blank" }
+
+		val response = httpClient.post("$baseUrl/v1/items") {
+			accept(ContentType.Application.Json)
+			header(HttpHeaders.ContentType, ContentType.Application.Json)
+			header(HttpHeaders.Authorization, "Bearer $apiToken")
+			setBody(ItemCreateRequest(name = name, description = description, locationId = locationId))
+		}
+
+		val payload = response.bodyAsText()
+		return json.decodeFromString(ItemSummary.serializer(), payload)
+	}
+
+	suspend fun updateItemQuantity(id: String, quantity: Int) {
+		require(id.isNotBlank()) { "Item ID must not be blank" }
+
+		httpClient.patch("$baseUrl/v1/items/$id") {
+			accept(ContentType.Application.Json)
+			header(HttpHeaders.ContentType, ContentType.Application.Json)
+			header(HttpHeaders.Authorization, "Bearer $apiToken")
+			setBody(ItemPatchRequest(quantity = quantity))
+		}
 	}
 
 	suspend fun getLocation(id: String): LocationDetails {
@@ -123,6 +159,18 @@ private data class LocationCreateRequest(
 	val name: String,
 	val description: String? = null,
 	val parentId: String? = null,
+)
+
+@Serializable
+private data class ItemCreateRequest(
+	val name: String,
+	val description: String? = null,
+	val locationId: String,
+)
+
+@Serializable
+private data class ItemPatchRequest(
+	val quantity: Int,
 )
 
 @Serializable
