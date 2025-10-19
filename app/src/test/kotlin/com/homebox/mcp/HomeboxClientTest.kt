@@ -9,12 +9,16 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.Url
+import io.ktor.http.content.TextContent
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -151,6 +155,72 @@ class HomeboxClientTest {
 
 			val url = requireNotNull(capturedUrl)
 			assertEquals(listOf("loc-1", "loc-2"), url.parameters.getAll("locations"))
+		}
+
+	@Test
+	fun `searchItems requests with query parameters`() =
+		runTest {
+			var capturedRequest: HttpRequestData? = null
+			val engine = MockEngine { request ->
+				capturedRequest = request
+				respond(
+					content = ByteReadChannel("""{"items":[],"page":1,"pageSize":25,"total":0}"""),
+					status = HttpStatusCode.OK,
+					headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+				)
+			}
+
+			val httpClient = HttpClient(engine) {
+				install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+			}
+
+			val client = HomeboxClient(httpClient, "https://example.test", "token")
+
+			val page = client.searchItems(query = "Hammer", page = 1, pageSize = 10)
+
+			val request = requireNotNull(capturedRequest)
+			assertEquals("/v1/items", request.url.encodedPath)
+			assertEquals("Hammer", request.url.parameters["q"])
+			assertEquals("1", request.url.parameters["page"])
+			assertEquals("10", request.url.parameters["pageSize"])
+			assertEquals("Bearer token", request.headers[HttpHeaders.Authorization])
+			assertEquals(0, page.total)
+		}
+
+	@Test
+	fun `createItem posts payload`() =
+		runTest {
+			var capturedRequest: HttpRequestData? = null
+			val engine = MockEngine { request ->
+				capturedRequest = request
+				respond(
+					content = ByteReadChannel(
+"""{"id":"item-1","name":"Hammer","description":"Steel hammer","quantity":2,"location":{"id":"loc-2","name":"Shelf A"}}""",
+					),
+					status = HttpStatusCode.Created,
+					headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+				)
+			}
+
+			val httpClient = HttpClient(engine) {
+				install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+			}
+
+			val client = HomeboxClient(httpClient, "https://example.test", "token")
+
+			val summary = client.createItem(name = "Hammer", locationId = "loc-2", description = "Steel hammer", quantity = 2)
+
+			val request = requireNotNull(capturedRequest)
+			assertEquals("/v1/items", request.url.encodedPath)
+			assertEquals("Bearer token", request.headers[HttpHeaders.Authorization])
+			val body = request.body as TextContent
+			val payload = Json.parseToJsonElement(body.text).jsonObject
+			assertEquals("Hammer", payload.getValue("name").jsonPrimitive.content)
+			assertEquals("loc-2", payload.getValue("locationId").jsonPrimitive.content)
+			assertEquals(2, payload.getValue("quantity").jsonPrimitive.int)
+			assertEquals("Steel hammer", payload.getValue("description").jsonPrimitive.content)
+			assertEquals("Hammer", summary.name)
+			assertEquals(2, summary.quantity)
 		}
 
 	@Test

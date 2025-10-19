@@ -79,6 +79,50 @@ class HomeboxClient(
 		return json.decodeFromString(ItemPage.serializer(), payload)
 	}
 
+	suspend fun searchItems(
+		query: String,
+		page: Int = 1,
+		pageSize: Int = 25,
+	): ItemPage {
+		require(query.isNotBlank()) { "Search query must not be blank" }
+		val response = httpClient.get("$baseUrl/v1/items") {
+			parameter("q", query)
+			parameter("page", page)
+			parameter("pageSize", pageSize)
+			accept(ContentType.Application.Json)
+			header(HttpHeaders.Authorization, "Bearer $apiToken")
+		}
+
+		val payload = response.bodyAsText()
+		return json.decodeFromString(ItemPage.serializer(), payload)
+	}
+
+	suspend fun createItem(
+		name: String,
+		locationId: String,
+		description: String? = null,
+		quantity: Int? = null,
+	): ItemSummary {
+		require(name.isNotBlank()) { "Item name must not be blank" }
+		require(locationId.isNotBlank()) { "Location id must not be blank" }
+		val response = httpClient.post("$baseUrl/v1/items") {
+			accept(ContentType.Application.Json)
+			header(HttpHeaders.ContentType, ContentType.Application.Json)
+			header(HttpHeaders.Authorization, "Bearer $apiToken")
+			setBody(
+				ItemCreateRequest(
+					name = name,
+					description = description,
+					locationId = locationId,
+					quantity = quantity,
+				),
+			)
+		}
+
+		val payload = response.bodyAsText()
+		return json.decodeFromString(ItemSummary.serializer(), payload)
+	}
+
 	suspend fun getLocation(id: String): LocationDetails {
 		val response = httpClient.get("$baseUrl/v1/locations/$id") {
 			accept(ContentType.Application.Json)
@@ -123,6 +167,14 @@ private data class LocationCreateRequest(
 	val name: String,
 	val description: String? = null,
 	val parentId: String? = null,
+)
+
+@Serializable
+private data class ItemCreateRequest(
+	val name: String,
+	val description: String? = null,
+	val locationId: String,
+	val quantity: Int? = null,
 )
 
 @Serializable
