@@ -96,21 +96,11 @@ class InsertItemTool(private val client: HomeboxClient) {
 
 		val locationPath = resolvedLocation.path.joinToString(separator = " / ")
 		val message = buildString {
-			append("Created item \"")
-			append(createdItem.name)
-			append("\" at location: ")
-			append(locationPath)
-			append('.')
+			append("""Created item "${createdItem.name}" at location: $locationPath.""")
 			if (quantity != DEFAULT_QUANTITY) {
-				append(' ')
-				append("Quantity set to ")
-				append(quantity)
-				append('.')
+				append(" Quantity set to $quantity.")
 			} else {
-				append(' ')
-				append("Quantity defaults to ")
-				append(DEFAULT_QUANTITY)
-				append('.')
+				append(" Quantity defaults to $DEFAULT_QUANTITY.")
 			}
 		}
 

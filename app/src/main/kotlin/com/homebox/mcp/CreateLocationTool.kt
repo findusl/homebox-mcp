@@ -96,18 +96,11 @@ class CreateLocationTool(private val client: HomeboxClient) {
 		val finalName = currentName ?: segments.last()
 		val fullPath = segments.joinToString(separator = " / ")
 		val message = if (createdLocations.isEmpty()) {
-			"Location \"$finalName\" already exists at path: $fullPath."
+			"""Location "$finalName" already exists at path: $fullPath."""
 		} else {
-			val createdNames = createdLocations.joinToString(separator = " / ") { it.name }
-			buildString {
-				append("Created ")
-				append(if (createdLocations.size == 1) "location" else "locations")
-				append(':')
-				append(' ')
-				append(createdNames)
-				append(". Full path: ")
-				append(fullPath)
-			}
+			val createdNames = createdLocations.joinToString(separator = " ; ") { it.name }
+			val locString = if (createdLocations.size == 1) "location" else "locations"
+			"Created $locString: $createdNames. Full path: $fullPath"
 		}
 
 		return CallToolResult(content = listOf(TextContent(message)))
