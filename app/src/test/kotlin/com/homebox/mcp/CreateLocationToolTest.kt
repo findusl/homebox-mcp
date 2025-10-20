@@ -86,7 +86,7 @@ class CreateLocationToolTest {
 			)
 
 			val text = (result.content.first() as TextContent).text ?: ""
-			assertTrue(text.contains("Created locations: Storage / Shelf A."))
+			assertTrue(text.contains("Created locations: Storage ; Shelf A."))
 			assertTrue(text.contains("Full path: Home / storage / Shelf A"))
 
 			inOrder(client).apply {
