@@ -51,6 +51,23 @@ class InsertItemToolTest {
 		}
 
 	@Test
+	fun `returns error when quantity is not positive`() =
+		runTest {
+			val result = tool.execute(
+				buildJsonObject {
+					put("name", JsonPrimitive("Hammer"))
+					put("location", JsonPrimitive("Home/Kitchen"))
+					put("quantity", JsonPrimitive(0))
+				},
+			)
+
+			val text = (result.content.first() as TextContent).text.orEmpty()
+			assertEquals("Quantity must be a positive integer.", text)
+			verify(client, never()).listItems(anyOrNull(), anyOrNull(), any())
+			verify(client, never()).createItem(any(), any(), anyOrNull())
+		}
+
+	@Test
 	fun `returns error when duplicate name exists`() =
 		runTest {
 			whenever(client.listItems(query = eq("Hammer"), locationIds = anyOrNull(), pageSize = eq(50)))
