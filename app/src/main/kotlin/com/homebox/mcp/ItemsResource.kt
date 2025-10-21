@@ -7,6 +7,8 @@ import java.net.URI
 import java.net.URISyntaxException
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
@@ -14,6 +16,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 
+@OptIn(ExperimentalUuidApi::class)
 class ItemsResource(
 	private val client: HomeboxClient,
 	private val json: Json = Json,
@@ -30,15 +33,18 @@ class ItemsResource(
 			if (locationQuery != null && locationIds?.isEmpty() == true) {
 				ItemPage(items = emptyList(), page = 1, pageSize = PAGE_SIZE, total = 0)
 			} else {
-				client.listItems(locationIds = locationIds?.takeIf { it.isNotEmpty() }, pageSize = PAGE_SIZE)
+				client.listItems(
+					locationIds = locationIds?.takeIf { it.isNotEmpty() },
+					pageSize = PAGE_SIZE,
+				)
 			}
 
-		val locationCache = mutableMapOf<String, List<String>>()
+		val locationCache = mutableMapOf<Uuid, List<String>>()
 		val items = JsonArray(
 			page.items.map { item ->
 				val path = item.location?.id?.let { resolveLocationPath(it, locationCache) } ?: emptyList()
 				buildJsonObject {
-					put("id", JsonPrimitive(item.id))
+					put("id", JsonPrimitive(item.id.toString()))
 					put("name", JsonPrimitive(item.name))
 					put("quantity", item.quantity?.let { JsonPrimitive(it) } ?: JsonNull)
 					put("description", item.description?.let { JsonPrimitive(it) } ?: JsonNull)
@@ -67,7 +73,7 @@ class ItemsResource(
 		)
 	}
 
-	private suspend fun resolveLocationPath(locationId: String, cache: MutableMap<String, List<String>>): List<String> {
+	private suspend fun resolveLocationPath(locationId: Uuid, cache: MutableMap<Uuid, List<String>>): List<String> {
 		cache[locationId]?.let { return it }
 		val details = client.getLocation(locationId)
 		val parentPath = details.parent?.id?.let { resolveLocationPath(it, cache) } ?: emptyList()
@@ -76,7 +82,7 @@ class ItemsResource(
 		return path
 	}
 
-	private suspend fun resolveLocationIds(query: String): List<String> {
+	private suspend fun resolveLocationIds(query: String): List<Uuid> {
 		val trimmed = query.trim()
 		if (trimmed.isEmpty()) {
 			return emptyList()
@@ -96,7 +102,7 @@ class ItemsResource(
 			if (rootMatches.isNotEmpty()) {
 				rootMatches.map { it.id }
 			} else {
-				val results = mutableListOf<String>()
+				val results = mutableListOf<Uuid>()
 				collectLocationsByName(locationNodes, trimmed, results)
 				results
 			}
@@ -107,7 +113,7 @@ class ItemsResource(
 		nodes: List<TreeItem>,
 		segments: List<String>,
 		depth: Int,
-	): List<String> {
+	): List<Uuid> {
 		if (depth >= segments.size) {
 			return emptyList()
 		}
@@ -131,7 +137,7 @@ class ItemsResource(
 	private fun collectLocationsByName(
 		nodes: List<TreeItem>,
 		targetName: String,
-		results: MutableList<String>,
+		results: MutableList<Uuid>,
 	) {
 		nodes.forEach { node ->
 			if (node.type != TreeItemType.LOCATION) {

@@ -1,6 +1,7 @@
 package com.homebox.mcp
 
 import io.modelcontextprotocol.kotlin.sdk.TextResourceContents
+import kotlin.uuid.ExperimentalUuidApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
@@ -15,7 +16,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalUuidApi::class)
 class LocationsResourceTest {
 	private val client: HomeboxClient = mock()
 	private val resource = LocationsResource(client)
@@ -26,18 +27,18 @@ class LocationsResourceTest {
 			whenever(client.getLocationTree(withItems = true)).thenReturn(
 				listOf(
 					TreeItem(
-						id = "loc-1",
+						id = TestConstants.TEST_ID_1,
 						name = "Kitchen",
 						type = TreeItemType.LOCATION,
 						children = listOf(
-							TreeItem(id = "item-1", name = "Plate", type = TreeItemType.ITEM),
+							TreeItem(id = TestConstants.TEST_ID_2, name = "Plate", type = TreeItemType.ITEM),
 							TreeItem(
-								id = "loc-2",
+								id = TestConstants.TEST_ID_3,
 								name = "Pantry",
 								type = TreeItemType.LOCATION,
 								children = listOf(
-									TreeItem(id = "item-2", name = "Flour", type = TreeItemType.ITEM),
-									TreeItem(id = "item-3", name = "Sugar", type = TreeItemType.ITEM),
+									TreeItem(id = TestConstants.TEST_ID_4, name = "Flour", type = TreeItemType.ITEM),
+									TreeItem(id = TestConstants.TEST_ID_5, name = "Sugar", type = TreeItemType.ITEM),
 								),
 							),
 						),

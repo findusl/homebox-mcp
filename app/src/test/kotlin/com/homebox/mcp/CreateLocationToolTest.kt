@@ -1,6 +1,8 @@
 package com.homebox.mcp
 
 import io.modelcontextprotocol.kotlin.sdk.TextContent
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonPrimitive
@@ -16,7 +18,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalUuidApi::class)
 class CreateLocationToolTest {
 	private val client: HomeboxClient = mock()
 	private val tool = CreateLocationTool(client)
@@ -44,7 +46,7 @@ class CreateLocationToolTest {
 	fun `reuses existing locations with case insensitive match`() =
 		runTest {
 			whenever(client.getLocationTree()).thenReturn(
-				listOf(TreeItem(id = "1", name = "Home", type = TreeItemType.LOCATION)),
+				listOf(TreeItem(id = TestConstants.TEST_ID_1, name = "Home", type = TreeItemType.LOCATION)),
 			)
 
 			val result = tool.execute(
@@ -57,7 +59,7 @@ class CreateLocationToolTest {
 			assertContains(text, "already exists")
 			assertContains(text, "Location \"Home\"")
 			verify(client).getLocationTree()
-			verify(client, never()).createLocation(any(), anyOrNull(), anyOrNull())
+			verify(client, never()).createLocation(any(), anyOrNull<Uuid>(), anyOrNull())
 		}
 
 	@Test
@@ -66,18 +68,23 @@ class CreateLocationToolTest {
 			whenever(client.getLocationTree()).thenReturn(
 				listOf(
 					TreeItem(
-						id = "root",
+						id = TestConstants.TEST_ID_1,
 						name = "Home",
 						type = TreeItemType.LOCATION,
 					),
 				),
 			)
 
-			val storageSummary = LocationSummary(id = "storage-id", name = "Storage")
-			val shelfSummary = LocationSummary(id = "shelf-id", name = "Shelf A")
+			val storageSummary = LocationSummary(id = TestConstants.TEST_ID_2, name = "Storage")
+			val shelfSummary = LocationSummary(id = TestConstants.TEST_ID_3, name = "Shelf A")
 
-			whenever(client.createLocation(name = "storage", parentId = "root", description = null))
-				.thenReturn(storageSummary)
+			whenever(
+				client.createLocation(
+					name = "storage",
+					parentId = TestConstants.TEST_ID_1,
+					description = null,
+				),
+			).thenReturn(storageSummary)
 			whenever(
 				client.createLocation(
 					name = "Shelf A",
@@ -99,7 +106,9 @@ class CreateLocationToolTest {
 
 			inOrder(client).apply {
 				verify(client).getLocationTree()
-				verify(client).createLocation(name = "storage", parentId = "root", description = null)
+				verify(
+					client,
+				).createLocation(name = "storage", parentId = TestConstants.TEST_ID_1, description = null)
 				verify(client).createLocation(name = "Shelf A", parentId = storageSummary.id, description = "Deep shelf")
 			}
 		}
@@ -110,12 +119,12 @@ class CreateLocationToolTest {
 			whenever(client.getLocationTree()).thenReturn(
 				listOf(
 					TreeItem(
-						id = "root",
+						id = TestConstants.TEST_ID_1,
 						name = "Home",
 						type = TreeItemType.LOCATION,
 						children = listOf(
 							TreeItem(
-								id = "storage-id",
+								id = TestConstants.TEST_ID_2,
 								name = "Storage",
 								type = TreeItemType.LOCATION,
 							),
@@ -134,6 +143,6 @@ class CreateLocationToolTest {
 
 			assertContains(text, "already exists")
 			verify(client).getLocationTree()
-			verify(client, never()).createLocation(any(), anyOrNull(), anyOrNull())
+			verify(client, never()).createLocation(any(), anyOrNull<Uuid>(), anyOrNull())
 		}
 }

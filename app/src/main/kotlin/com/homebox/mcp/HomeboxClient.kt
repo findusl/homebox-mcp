@@ -1,3 +1,6 @@
+@file:OptIn(ExperimentalUuidApi::class)
+@file:UseSerializers(UuidAsStringSerializer::class)
+
 package com.homebox.mcp
 
 import io.ktor.client.HttpClient
@@ -11,11 +14,21 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 
+@OptIn(ExperimentalUuidApi::class)
 class HomeboxClient(
 	private val httpClient: HttpClient,
 	private val baseUrl: String,
@@ -52,7 +65,7 @@ class HomeboxClient(
 
 	suspend fun createLocation(
 		name: String,
-		parentId: String? = null,
+		parentId: Uuid? = null,
 		description: String? = null,
 	): LocationSummary {
 		require(name.isNotBlank()) { "Location name must not be blank" }
@@ -60,7 +73,13 @@ class HomeboxClient(
 			accept(ContentType.Application.Json)
 			header(HttpHeaders.ContentType, ContentType.Application.Json)
 			header(HttpHeaders.Authorization, "Bearer $apiToken")
-			setBody(LocationCreateRequest(name = name, description = description, parentId = parentId))
+			setBody(
+				LocationCreateRequest(
+					name = name,
+					description = description,
+					parentId = parentId,
+				),
+			)
 		}
 
 		return Json.decodeFromString<LocationSummary>(response.bodyAsText())
@@ -68,13 +87,13 @@ class HomeboxClient(
 
 	suspend fun listItems(
 		query: String? = null,
-		locationIds: List<String>? = null,
+		locationIds: List<Uuid>? = null,
 		pageSize: Int = 100,
 	): ItemPage {
 		val response = httpClient.get("$baseUrl/v1/items") {
 			parameter("pageSize", pageSize)
 			query?.takeIf { it.isNotBlank() }?.let { parameter("q", it) }
-			locationIds?.forEach { parameter("locations", it) }
+			locationIds?.forEach { parameter("locations", it.toString()) }
 			accept(ContentType.Application.Json)
 			header(HttpHeaders.Authorization, "Bearer $apiToken")
 		}
@@ -85,26 +104,29 @@ class HomeboxClient(
 
 	suspend fun createItem(
 		name: String,
-		locationId: String,
+		locationId: Uuid,
 		description: String? = null,
 	): ItemSummary {
 		require(name.isNotBlank()) { "Item name must not be blank" }
-		require(locationId.isNotBlank()) { "Location ID must not be blank" }
 
 		val response = httpClient.post("$baseUrl/v1/items") {
 			accept(ContentType.Application.Json)
 			header(HttpHeaders.ContentType, ContentType.Application.Json)
 			header(HttpHeaders.Authorization, "Bearer $apiToken")
-			setBody(ItemCreateRequest(name = name, description = description, locationId = locationId))
+			setBody(
+				ItemCreateRequest(
+					name = name,
+					description = description,
+					locationId = locationId,
+				),
+			)
 		}
 
 		val payload = response.bodyAsText()
 		return Json.decodeFromString(ItemSummary.serializer(), payload)
 	}
 
-	suspend fun updateItemQuantity(id: String, quantity: Int) {
-		require(id.isNotBlank()) { "Item ID must not be blank" }
-
+	suspend fun updateItemQuantity(id: Uuid, quantity: Int) {
 		httpClient.patch("$baseUrl/v1/items/$id") {
 			accept(ContentType.Application.Json)
 			header(HttpHeaders.ContentType, ContentType.Application.Json)
@@ -113,7 +135,7 @@ class HomeboxClient(
 		}
 	}
 
-	suspend fun getLocation(id: String): LocationDetails {
+	suspend fun getLocation(id: Uuid): LocationDetails {
 		val response = httpClient.get("$baseUrl/v1/locations/$id") {
 			accept(ContentType.Application.Json)
 			header(HttpHeaders.Authorization, "Bearer $apiToken")
@@ -131,7 +153,7 @@ class HomeboxClient(
 
 @Serializable
 data class Location(
-	val id: String,
+	val id: Uuid,
 	val name: String,
 	val description: String? = null,
 	@SerialName("itemCount") val itemCount: Int? = null,
@@ -139,14 +161,14 @@ data class Location(
 
 @Serializable
 data class LocationSummary(
-	val id: String,
+	val id: Uuid,
 	val name: String,
 	val description: String? = null,
 )
 
 @Serializable
 data class TreeItem(
-	val id: String,
+	val id: Uuid,
 	val name: String,
 	val type: TreeItemType,
 	val children: List<TreeItem> = emptyList(),
@@ -165,14 +187,14 @@ enum class TreeItemType {
 private data class LocationCreateRequest(
 	val name: String,
 	val description: String? = null,
-	val parentId: String? = null,
+	val parentId: Uuid? = null,
 )
 
 @Serializable
 private data class ItemCreateRequest(
 	val name: String,
 	val description: String? = null,
-	val locationId: String,
+	val locationId: Uuid,
 )
 
 @Serializable
@@ -182,7 +204,7 @@ private data class ItemPatchRequest(
 
 @Serializable
 data class ItemSummary(
-	val id: String,
+	val id: Uuid,
 	val name: String,
 	val description: String? = null,
 	val quantity: Int? = null,
@@ -199,8 +221,19 @@ data class ItemPage(
 
 @Serializable
 data class LocationDetails(
-	val id: String,
+	val id: Uuid,
 	val name: String,
 	val description: String? = null,
 	val parent: LocationSummary? = null,
 )
+
+@OptIn(ExperimentalUuidApi::class)
+object UuidAsStringSerializer : KSerializer<Uuid> {
+	override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Uuid", PrimitiveKind.STRING)
+
+	override fun serialize(encoder: Encoder, value: Uuid) {
+		encoder.encodeString(value.toString())
+	}
+
+	override fun deserialize(decoder: Decoder): Uuid = Uuid.parse(decoder.decodeString())
+}

@@ -7,10 +7,12 @@ import dev.forkhandles.result4k.onFailure
 import io.modelcontextprotocol.kotlin.sdk.CallToolResult
 import io.modelcontextprotocol.kotlin.sdk.TextContent
 import io.modelcontextprotocol.kotlin.sdk.Tool
+import kotlin.uuid.ExperimentalUuidApi
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
+@OptIn(ExperimentalUuidApi::class)
 class InsertItemTool(private val client: HomeboxClient) {
 	val name: String = "insert_item"
 	val description: String =
