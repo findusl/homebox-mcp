@@ -10,29 +10,29 @@ import org.junit.jupiter.api.Test
 class LocationResolverTest {
 	private val tree = listOf(
 		TreeItem(
-			id = TestConstants.TEST_ID_1.toString(),
+			id = TestConstants.TEST_ID_1,
 			name = "Home",
 			type = TreeItemType.LOCATION,
 			children = listOf(
 				TreeItem(
-					id = TestConstants.TEST_ID_2.toString(),
+					id = TestConstants.TEST_ID_2,
 					name = "Garage",
 					type = TreeItemType.LOCATION,
 					children = listOf(
 						TreeItem(
-							id = TestConstants.TEST_ID_3.toString(),
+							id = TestConstants.TEST_ID_3,
 							name = "Shelf A",
 							type = TreeItemType.LOCATION,
 						),
 					),
 				),
 				TreeItem(
-					id = TestConstants.TEST_ID_4.toString(),
+					id = TestConstants.TEST_ID_4,
 					name = "Attic",
 					type = TreeItemType.LOCATION,
 				),
 				TreeItem(
-					id = TestConstants.TEST_ID_5.toString(),
+					id = TestConstants.TEST_ID_5,
 					name = "Old Lamp",
 					type = TreeItemType.ITEM,
 				),
@@ -47,7 +47,7 @@ class LocationResolverTest {
 		val result = resolver.resolve(TestConstants.TEST_ID_4.toString())
 
 		assertNotNull(result)
-		assertEquals(TestConstants.TEST_ID_4.toString(), result!!.id)
+		assertEquals(TestConstants.TEST_ID_4, result!!.id)
 		assertEquals(listOf("Home", "Attic"), result.path)
 	}
 
@@ -56,7 +56,7 @@ class LocationResolverTest {
 		val result = resolver.resolve("home/garage/shelf a")
 
 		assertNotNull(result)
-		assertEquals(TestConstants.TEST_ID_3.toString(), result!!.id)
+		assertEquals(TestConstants.TEST_ID_3, result!!.id)
 	}
 
 	@Test

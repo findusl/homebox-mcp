@@ -1,6 +1,8 @@
 package com.homebox.mcp
 
 import io.modelcontextprotocol.kotlin.sdk.TextContent
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonPrimitive
@@ -16,7 +18,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalUuidApi::class)
 class InsertItemToolTest {
 	private val client: HomeboxClient = mock()
 	private val tool = InsertItemTool(client)
@@ -44,7 +46,7 @@ class InsertItemToolTest {
 			)
 			val text = (result.content.first() as TextContent).text.orEmpty()
 			assertContains(text, "name")
-			verify(client, never()).listItems(anyOrNull(), anyOrNull(), any())
+			verify(client, never()).listItems(anyOrNull(), anyOrNull<List<Uuid>>(), any())
 		}
 
 	@Test
@@ -57,7 +59,7 @@ class InsertItemToolTest {
 			)
 			val text = (result.content.first() as TextContent).text.orEmpty()
 			assertContains(text, "location")
-			verify(client, never()).listItems(anyOrNull(), anyOrNull(), any())
+			verify(client, never()).listItems(anyOrNull(), anyOrNull<List<Uuid>>(), any())
 		}
 
 	@Test
@@ -73,19 +75,19 @@ class InsertItemToolTest {
 
 			val text = (result.content.first() as TextContent).text.orEmpty()
 			assertEquals("Quantity must be a positive integer.", text)
-			verify(client, never()).listItems(anyOrNull(), anyOrNull(), any())
-			verify(client, never()).createItem(any(), any(), anyOrNull())
+			verify(client, never()).listItems(anyOrNull(), anyOrNull<List<Uuid>>(), any())
+			verify(client, never()).createItem(any(), any<Uuid>(), anyOrNull())
 		}
 
 	@Test
 	fun `returns error when duplicate name exists`() =
 		runTest {
-			whenever(client.listItems(query = eq("Hammer"), locationIds = anyOrNull(), pageSize = eq(50)))
+			whenever(client.listItems(query = eq("Hammer"), locationIds = anyOrNull<List<Uuid>>(), pageSize = eq(50)))
 				.thenReturn(
 					ItemPage(
 						items = listOf(
 							ItemSummary(
-								id = "item-1",
+								id = TestConstants.TEST_ID_1,
 								name = "HAMMER",
 								description = null,
 								quantity = 1,
@@ -107,15 +109,15 @@ class InsertItemToolTest {
 
 			val text = (result.content.first() as TextContent).text.orEmpty()
 			assertContains(text, "already exists")
-			verify(client).listItems(query = eq("Hammer"), locationIds = anyOrNull(), pageSize = eq(50))
+			verify(client).listItems(query = eq("Hammer"), locationIds = anyOrNull<List<Uuid>>(), pageSize = eq(50))
 			verify(client, never()).getLocationTree()
-			verify(client, never()).createItem(any(), any(), anyOrNull())
+			verify(client, never()).createItem(any(), any<Uuid>(), anyOrNull())
 		}
 
 	@Test
 	fun `returns error when location cannot be resolved`() =
 		runTest {
-			whenever(client.listItems(query = eq("Hammer"), locationIds = anyOrNull(), pageSize = eq(50)))
+			whenever(client.listItems(query = eq("Hammer"), locationIds = anyOrNull<List<Uuid>>(), pageSize = eq(50)))
 				.thenReturn(emptyItemPage())
 			whenever(client.getLocationTree()).thenReturn(emptyList())
 
@@ -128,25 +130,25 @@ class InsertItemToolTest {
 
 			val text = (result.content.first() as TextContent).text.orEmpty()
 			assertEquals("Location 'Unknown' was not found.", text)
-			verify(client).listItems(query = eq("Hammer"), locationIds = anyOrNull(), pageSize = eq(50))
+			verify(client).listItems(query = eq("Hammer"), locationIds = anyOrNull<List<Uuid>>(), pageSize = eq(50))
 			verify(client).getLocationTree()
-			verify(client, never()).createItem(any(), any(), anyOrNull())
+			verify(client, never()).createItem(any(), any<Uuid>(), anyOrNull())
 		}
 
 	@Test
 	fun `creates item with default quantity when not provided`() =
 		runTest {
-			whenever(client.listItems(query = eq("Hammer"), locationIds = anyOrNull(), pageSize = eq(50)))
+			whenever(client.listItems(query = eq("Hammer"), locationIds = anyOrNull<List<Uuid>>(), pageSize = eq(50)))
 				.thenReturn(emptyItemPage())
 			whenever(client.getLocationTree()).thenReturn(
 				listOf(
 					TreeItem(
-						id = "root",
+						id = TestConstants.TEST_ID_1,
 						name = "Home",
 						type = TreeItemType.LOCATION,
 						children = listOf(
 							TreeItem(
-								id = "garage",
+								id = TestConstants.TEST_ID_2,
 								name = "Garage",
 								type = TreeItemType.LOCATION,
 							),
@@ -158,12 +160,12 @@ class InsertItemToolTest {
 			whenever(
 				client.createItem(
 					name = eq("Hammer"),
-					locationId = eq("garage"),
+					locationId = eq(TestConstants.TEST_ID_2),
 					description = anyOrNull(),
 				),
 			).thenReturn(
 				ItemSummary(
-					id = "created-id",
+					id = TestConstants.TEST_ID_3,
 					name = "Hammer",
 					description = null,
 					quantity = 1,
@@ -183,27 +185,31 @@ class InsertItemToolTest {
 			assertContains(text, "Home / Garage")
 			assertContains(text, "Quantity defaults to 1")
 
-			verify(client).createItem(name = eq("Hammer"), locationId = eq("garage"), description = anyOrNull())
+			verify(client).createItem(
+				name = eq("Hammer"),
+				locationId = eq(TestConstants.TEST_ID_2),
+				description = anyOrNull(),
+			)
 			verify(client, never()).updateItemQuantity(any(), any())
 		}
 
 	@Test
 	fun `updates quantity when provided`() =
 		runTest {
-			whenever(client.listItems(query = eq("Screwdriver"), locationIds = anyOrNull(), pageSize = eq(50)))
+			whenever(client.listItems(query = eq("Screwdriver"), locationIds = anyOrNull<List<Uuid>>(), pageSize = eq(50)))
 				.thenReturn(emptyItemPage())
 			whenever(client.getLocationTree()).thenReturn(
-				listOf(TreeItem(id = "drawer", name = "Drawer", type = TreeItemType.LOCATION)),
+				listOf(TreeItem(id = TestConstants.TEST_ID_1, name = "Drawer", type = TreeItemType.LOCATION)),
 			)
 			whenever(
 				client.createItem(
 					name = eq("Screwdriver"),
-					locationId = eq("drawer"),
+					locationId = eq(TestConstants.TEST_ID_1),
 					description = anyOrNull(),
 				),
 			).thenReturn(
 				ItemSummary(
-					id = "item-123",
+					id = TestConstants.TEST_ID_2,
 					name = "Screwdriver",
 					description = null,
 					quantity = 1,
@@ -223,7 +229,7 @@ class InsertItemToolTest {
 			val text = (result.content.first() as TextContent).text.orEmpty()
 			assertContains(text, "Quantity set to 3")
 
-			verify(client).updateItemQuantity("item-123", 3)
+			verify(client).updateItemQuantity(TestConstants.TEST_ID_2, 3)
 		}
 
 	private fun emptyItemPage(): ItemPage = ItemPage(items = emptyList(), page = 1, pageSize = 50, total = 0)

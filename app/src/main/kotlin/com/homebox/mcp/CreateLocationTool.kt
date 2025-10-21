@@ -5,9 +5,12 @@ import com.xemantic.ai.tool.schema.meta.Title
 import dev.forkhandles.result4k.onFailure
 import io.modelcontextprotocol.kotlin.sdk.CallToolResult
 import io.modelcontextprotocol.kotlin.sdk.Tool
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
+@OptIn(ExperimentalUuidApi::class)
 class CreateLocationTool(private val client: HomeboxClient) {
 	val name: String = "create_location"
 	val description: String =
@@ -75,7 +78,7 @@ class CreateLocationTool(private val client: HomeboxClient) {
 	)
 
 	private data class KnownLocation(
-		val id: String?,
+		val id: Uuid?,
 		val children: List<TreeItem>,
 	)
 }

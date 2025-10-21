@@ -26,7 +26,7 @@ class LocationResolver(private val tree: List<TreeItem>) {
 		return ResolvedLocation(id, segments)
 	}
 
-	private fun resolve(segments: List<String>, currentNodes: List<TreeItem>): String? {
+	private fun resolve(segments: List<String>, currentNodes: List<TreeItem>): Uuid? {
 		val node = currentNodes
 			.filter { it.type == TreeItemType.LOCATION }
 			.find { it.name.equals(segments[0], ignoreCase = true) } ?: return null
@@ -42,7 +42,7 @@ class LocationResolver(private val tree: List<TreeItem>) {
 		nodes
 			.filter { it.type == TreeItemType.LOCATION }
 			.forEach { node ->
-				if (node.id == id.toString()) {
+				if (node.id == id) {
 					return ResolvedLocation(node.id, listOf(node.name))
 				}
 				val foundChild = resolveById(id, node.children)
@@ -53,5 +53,5 @@ class LocationResolver(private val tree: List<TreeItem>) {
 		return null
 	}
 
-	data class ResolvedLocation(val id: String, val path: List<String>)
+	data class ResolvedLocation(val id: Uuid, val path: List<String>)
 }
