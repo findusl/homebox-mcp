@@ -1,0 +1,8 @@
+POST {{baseUrl}}/api/v1/users/login
+accept: application/json
+Content-Type: application/x-www-form-urlencoded
+
+username = {{username}} &
+password = {{password}}
+
+> {% client.global.set("apiToken", response.body.token); %}

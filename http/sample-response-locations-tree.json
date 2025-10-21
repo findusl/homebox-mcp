@@ -1,0 +1,45 @@
+[
+  {
+    "id": "269ee7f8-0179-4239-988e-ffb6789deefc",
+    "name": "Home",
+    "type": "location",
+    "children": [
+      {
+        "id": "55e08336-2e2a-4d99-801c-c0888134ce85",
+        "name": "Basement",
+        "type": "location",
+        "children": []
+      },
+      {
+        "id": "e8df1654-ee92-4b02-851c-15d9f20ea0d3",
+        "name": "Bathroom",
+        "type": "location",
+        "children": []
+      },
+      {
+        "id": "f04468b0-2008-4bb7-89b1-d8cd5116b8ed",
+        "name": "Bedroom",
+        "type": "location",
+        "children": []
+      },
+      {
+        "id": "492ff41b-d51d-4578-a4eb-f1236eadb529",
+        "name": "Kitchen",
+        "type": "location",
+        "children": []
+      },
+      {
+        "id": "b95ef2b7-bb6f-4a40-811f-cfea5b11cc15",
+        "name": "Living Room",
+        "type": "location",
+        "children": []
+      },
+      {
+        "id": "8be8ec63-a452-4259-80fc-7e45d3e9d9e4",
+        "name": "Office",
+        "type": "location",
+        "children": []
+      }
+    ]
+  }
+]

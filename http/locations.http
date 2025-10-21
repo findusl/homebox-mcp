@@ -1,0 +1,7 @@
+### Get location tree
+GET {{baseUrl}}/api/v1/locations/tree?withItems=true
+Accept: application/json
+Authorization: {{apiToken}}
+
+###
+
