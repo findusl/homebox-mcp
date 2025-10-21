@@ -8,13 +8,14 @@ import io.modelcontextprotocol.kotlin.sdk.TextContent
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 
 @OptIn(ExperimentalSerializationApi::class)
 inline fun <reified T> JsonObject.parseArguments(): Result4k<T, CallToolResult> {
 	try {
-		return toolArgumentsJson.decodeFromJsonElement<T>(this).asSuccess()
+		return Json.decodeFromJsonElement<T>(this).asSuccess()
 	} catch (exception: SerializationException) {
 		if (exception is MissingFieldException) {
 			return textResult("Missing the required fields: " + exception.missingFields.joinToString(",")).asFailure()

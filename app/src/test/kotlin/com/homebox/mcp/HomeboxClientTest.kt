@@ -14,7 +14,6 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -38,7 +37,7 @@ class HomeboxClientTest {
 
 			val httpClient = HttpClient(engine) {
 				install(ContentNegotiation) {
-					json(Json { ignoreUnknownKeys = true })
+					json()
 				}
 			}
 
@@ -114,7 +113,7 @@ class HomeboxClientTest {
 			}
 
 			val httpClient = HttpClient(engine) {
-				install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+				install(ContentNegotiation) { json() }
 			}
 
 			val client = HomeboxClient(httpClient, "https://example.test", "token")

@@ -20,7 +20,6 @@ class HomeboxClient(
 	private val httpClient: HttpClient,
 	private val baseUrl: String,
 	private val apiToken: String,
-	private val json: Json = Json { ignoreUnknownKeys = true },
 ) {
 	init {
 		require(baseUrl.isNotBlank()) { "Homebox base URL must not be blank" }
@@ -35,7 +34,7 @@ class HomeboxClient(
 		}
 
 		val payload = response.bodyAsText()
-		return json.decodeFromString(LocationsSerializer, payload)
+		return Json.decodeFromString(LocationsSerializer, payload)
 	}
 
 	suspend fun getLocationTree(withItems: Boolean = false): List<TreeItem> {
@@ -48,7 +47,7 @@ class HomeboxClient(
 		}
 
 		val payload = response.bodyAsText()
-		return json.decodeFromString(LocationTreeSerializer, payload)
+		return Json.decodeFromString(LocationTreeSerializer, payload)
 	}
 
 	suspend fun createLocation(
@@ -64,7 +63,7 @@ class HomeboxClient(
 			setBody(LocationCreateRequest(name = name, description = description, parentId = parentId))
 		}
 
-		return json.decodeFromString<LocationSummary>(response.bodyAsText())
+		return Json.decodeFromString<LocationSummary>(response.bodyAsText())
 	}
 
 	suspend fun listItems(
@@ -81,7 +80,7 @@ class HomeboxClient(
 		}
 
 		val payload = response.bodyAsText()
-		return json.decodeFromString(ItemPage.serializer(), payload)
+		return Json.decodeFromString(ItemPage.serializer(), payload)
 	}
 
 	suspend fun createItem(
@@ -100,7 +99,7 @@ class HomeboxClient(
 		}
 
 		val payload = response.bodyAsText()
-		return json.decodeFromString(ItemSummary.serializer(), payload)
+		return Json.decodeFromString(ItemSummary.serializer(), payload)
 	}
 
 	suspend fun updateItemQuantity(id: String, quantity: Int) {
@@ -121,7 +120,7 @@ class HomeboxClient(
 		}
 
 		val payload = response.bodyAsText()
-		return json.decodeFromString(LocationDetails.serializer(), payload)
+		return Json.decodeFromString(LocationDetails.serializer(), payload)
 	}
 
 	private companion object {

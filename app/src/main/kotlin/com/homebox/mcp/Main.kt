@@ -13,7 +13,6 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.asSink
 import kotlinx.io.buffered
-import kotlinx.serialization.json.Json
 
 fun main() {
 	val baseUrl = System.getenv("HOMEBOX_BASE_URL")?.takeIf { it.isNotBlank() }
@@ -23,7 +22,7 @@ fun main() {
 
 	val httpClient = HttpClient(CIO) {
 		install(ContentNegotiation) {
-			json(Json { ignoreUnknownKeys = true })
+			json()
 		}
 		defaultRequest {
 			contentType(ContentType.Application.Json)
