@@ -2,15 +2,11 @@ package com.homebox.mcp
 
 import com.xemantic.ai.tool.schema.meta.Description
 import com.xemantic.ai.tool.schema.meta.Title
+import dev.forkhandles.result4k.onFailure
 import io.modelcontextprotocol.kotlin.sdk.CallToolResult
-import io.modelcontextprotocol.kotlin.sdk.TextContent
 import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.jsonPrimitive
 
 class CreateLocationTool(private val client: HomeboxClient) {
 	val name: String = "create_location"
@@ -20,33 +16,21 @@ class CreateLocationTool(private val client: HomeboxClient) {
 	val inputSchema: Tool.Input = toolInputSchema<CreateLocationParameters>()
 
 	suspend fun execute(arguments: JsonObject): CallToolResult {
-		val parameters = try {
-			toolArgumentsJson.decodeFromJsonElement(CreateLocationParameters.serializer(), arguments)
-		} catch (_: SerializationException) {
-			val rawPath = arguments["path"]?.jsonPrimitive?.contentOrNull?.trim()
-			if (rawPath.isNullOrEmpty()) {
-				return CallToolResult(content = listOf(TextContent("Path is required to create a location.")))
-			}
-			return CallToolResult(content = listOf(TextContent("Unable to parse create_location arguments. Please ensure the input matches the schema.")))
-		}
+		val parameters = arguments.parseArguments<CreateLocationParameters>().onFailure { return it.reason }
 
 		val rawPath = parameters.path.trim()
 		if (rawPath.isEmpty()) {
-			return CallToolResult(content = listOf(TextContent("Path is required to create a location.")))
+			return textResult("Path is required to create a location.")
 		}
 
-		val description = parameters.description
-			?.trim()
-			?.takeIf { it.isNotEmpty() }
+		val description = parameters.description?.trim()?.takeIf { it.isNotEmpty() }
 
 		val segments = rawPath
 			.split('/')
 			.map { it.trim() }
 			.filter { it.isNotEmpty() }
 		if (segments.isEmpty()) {
-			return CallToolResult(
-				content = listOf(TextContent("Path must include at least one non-empty location segment.")),
-			)
+			return textResult("Path must include at least one non-empty location segment.")
 		}
 
 		val tree = client.getLocationTree()
@@ -90,7 +74,7 @@ class CreateLocationTool(private val client: HomeboxClient) {
 			"Created $locString: $createdNames. Full path: $fullPath"
 		}
 
-		return CallToolResult(content = listOf(TextContent(message)))
+		return textResult(message)
 	}
 
 	private fun List<TreeItem>.filterLocations(): List<TreeItem> = filter { it.type.equals(LOCATION_TYPE, ignoreCase = true) }

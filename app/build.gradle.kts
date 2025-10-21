@@ -17,6 +17,8 @@ dependencies {
 	implementation(libs.ktor.client.content.negotiation)
 	implementation(libs.ktor.serialization.kotlinx.json)
 	implementation(libs.xemantic.ai.tool.schema)
+	// https://mvnrepository.com/artifact/dev.forkhandles/result4k
+	implementation("dev.forkhandles:result4k:2.23.0.0")
 
 	testImplementation(platform(libs.junit.bom))
 	testImplementation(libs.junit.jupiter)

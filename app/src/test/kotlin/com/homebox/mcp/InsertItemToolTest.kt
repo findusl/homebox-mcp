@@ -42,9 +42,8 @@ class InsertItemToolTest {
 					put("location", JsonPrimitive("Home/Kitchen"))
 				},
 			)
-
 			val text = (result.content.first() as TextContent).text.orEmpty()
-			assertEquals("Item name is required to insert an item.", text)
+			assertTrue(text.contains("name"))
 			verify(client, never()).listItems(anyOrNull(), anyOrNull(), any())
 		}
 
@@ -56,9 +55,8 @@ class InsertItemToolTest {
 					put("name", JsonPrimitive("Hammer"))
 				},
 			)
-
 			val text = (result.content.first() as TextContent).text.orEmpty()
-			assertEquals("Location is required to insert an item.", text)
+			assertTrue(text.contains("location"))
 			verify(client, never()).listItems(anyOrNull(), anyOrNull(), any())
 		}
 

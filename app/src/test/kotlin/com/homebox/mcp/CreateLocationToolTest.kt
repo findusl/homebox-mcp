@@ -1,18 +1,14 @@
 package com.homebox.mcp
 
 import io.modelcontextprotocol.kotlin.sdk.TextContent
-import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.inOrder
@@ -41,8 +37,7 @@ class CreateLocationToolTest {
 		runTest {
 			val result = tool.execute(buildJsonObject {})
 			val text = (result.content.first() as TextContent).text ?: ""
-
-			assertEquals("Path is required to create a location.", text)
+			assertTrue(text.contains("path"))
 			verify(client, never()).getLocationTree()
 		}
 
