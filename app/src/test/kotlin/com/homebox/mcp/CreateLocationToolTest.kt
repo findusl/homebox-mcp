@@ -26,7 +26,7 @@ class CreateLocationToolTest {
 	fun `returns error when path is missing`() =
 		runTest {
 			val result = tool.execute(buildJsonObject {})
-			val text = (result.content.first() as TextContent).text
+			val text = (result.content.first() as TextContent).text ?: ""
 
 			assertEquals("Path is required to create a location.", text)
 			verify(client, never()).getLocationTree()

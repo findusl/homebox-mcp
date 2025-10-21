@@ -16,6 +16,7 @@ dependencies {
 	implementation(libs.ktor.client.cio)
 	implementation(libs.ktor.client.content.negotiation)
 	implementation(libs.ktor.serialization.kotlinx.json)
+	implementation(libs.xemantic.ai.tool.schema)
 
 	testImplementation(platform(libs.junit.bom))
 	testImplementation(libs.junit.jupiter)

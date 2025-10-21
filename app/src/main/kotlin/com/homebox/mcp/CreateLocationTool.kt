@@ -1,54 +1,41 @@
 package com.homebox.mcp
 
+import com.xemantic.ai.tool.schema.meta.Description
+import com.xemantic.ai.tool.schema.meta.Title
 import io.modelcontextprotocol.kotlin.sdk.CallToolResult
 import io.modelcontextprotocol.kotlin.sdk.TextContent
 import io.modelcontextprotocol.kotlin.sdk.Tool
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.put
 
 class CreateLocationTool(private val client: HomeboxClient) {
 	val name: String = "create_location"
 	val description: String =
 		"Create a Homebox location. Provide a single name or a slash-separated path to create nested locations, reusing existing parents when present."
 
-	val inputSchema: Tool.Input = Tool.Input(
-		properties = buildJsonObject {
-			put(
-				"path",
-				buildJsonObject {
-					put("type", "string")
-					put(
-						"description",
-						"The location name or a '/' separated path (e.g., 'Home/Basement/Shelf A'). Matching is case-insensitive and preserves spaces.",
-					)
-				},
-			)
-			put(
-				"description",
-				buildJsonObject {
-					put("type", "string")
-					put(
-						"description",
-						"Optional description applied to the final location created in the path.",
-					)
-				},
-			)
-		},
-		required = listOf("path"),
-	)
+	val inputSchema: Tool.Input = toolInputSchema<CreateLocationParameters>()
 
 	suspend fun execute(arguments: JsonObject): CallToolResult {
-		val rawPath = arguments["path"]?.jsonPrimitive?.contentOrNull?.trim()
-		if (rawPath.isNullOrBlank()) {
+		val parameters = try {
+			toolArgumentsJson.decodeFromJsonElement(CreateLocationParameters.serializer(), arguments)
+		} catch (_: SerializationException) {
+			val rawPath = arguments["path"]?.jsonPrimitive?.contentOrNull?.trim()
+			if (rawPath.isNullOrEmpty()) {
+				return CallToolResult(content = listOf(TextContent("Path is required to create a location.")))
+			}
+			return CallToolResult(content = listOf(TextContent("Unable to parse create_location arguments. Please ensure the input matches the schema.")))
+		}
+
+		val rawPath = parameters.path.trim()
+		if (rawPath.isEmpty()) {
 			return CallToolResult(content = listOf(TextContent("Path is required to create a location.")))
 		}
 
-		val description = arguments["description"]
-			?.jsonPrimitive
-			?.contentOrNull
+		val description = parameters.description
 			?.trim()
 			?.takeIf { it.isNotEmpty() }
 
@@ -135,6 +122,15 @@ class CreateLocationTool(private val client: HomeboxClient) {
 			KnownLocation(id = created.id, name = created.name, children = emptyList()),
 		)
 	}
+
+	@Serializable
+	@Title("Create location arguments")
+	private data class CreateLocationParameters(
+		@Description("The location name or a '/' separated path (e.g., 'Home/Basement/Shelf A'). Matching is case-insensitive and preserves spaces.")
+		val path: String,
+		@Description("Optional description applied to the final location created in the path.")
+		val description: String? = null,
+	)
 
 	private companion object {
 		private const val LOCATION_TYPE = "location"
