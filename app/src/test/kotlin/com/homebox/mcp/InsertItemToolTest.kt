@@ -143,12 +143,12 @@ class InsertItemToolTest {
 					TreeItem(
 						id = "root",
 						name = "Home",
-						type = "location",
+						type = TreeItemType.LOCATION,
 						children = listOf(
 							TreeItem(
 								id = "garage",
 								name = "Garage",
-								type = "location",
+								type = TreeItemType.LOCATION,
 							),
 						),
 					),
@@ -193,7 +193,7 @@ class InsertItemToolTest {
 			whenever(client.listItems(query = eq("Screwdriver"), locationIds = anyOrNull(), pageSize = eq(50)))
 				.thenReturn(emptyItemPage())
 			whenever(client.getLocationTree()).thenReturn(
-				listOf(TreeItem(id = "drawer", name = "Drawer", type = "location")),
+				listOf(TreeItem(id = "drawer", name = "Drawer", type = TreeItemType.LOCATION)),
 			)
 			whenever(
 				client.createItem(

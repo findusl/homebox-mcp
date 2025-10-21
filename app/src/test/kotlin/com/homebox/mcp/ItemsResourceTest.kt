@@ -86,8 +86,8 @@ class ItemsResourceTest {
 					TreeItem(
 						id = "root",
 						name = "Home",
-						type = "location",
-						children = listOf(TreeItem(id = "loc-2", name = "Basement", type = "location")),
+						type = TreeItemType.LOCATION,
+						children = listOf(TreeItem(id = "loc-2", name = "Basement", type = TreeItemType.LOCATION)),
 					),
 				),
 			)
@@ -130,7 +130,7 @@ class ItemsResourceTest {
 	fun `read with unmatched location returns empty set`() =
 		runTest {
 			whenever(client.getLocationTree()).thenReturn(
-				listOf(TreeItem(id = "root", name = "Home", type = "location")),
+				listOf(TreeItem(id = "root", name = "Home", type = TreeItemType.LOCATION)),
 			)
 
 			val request = ReadResourceRequest("resource://homebox/items?location=Unknown", buildJsonObject { })

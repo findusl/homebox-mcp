@@ -28,16 +28,16 @@ class LocationsResourceTest {
 					TreeItem(
 						id = "loc-1",
 						name = "Kitchen",
-						type = "location",
+						type = TreeItemType.LOCATION,
 						children = listOf(
-							TreeItem(id = "item-1", name = "Plate", type = "item"),
+							TreeItem(id = "item-1", name = "Plate", type = TreeItemType.ITEM),
 							TreeItem(
 								id = "loc-2",
 								name = "Pantry",
-								type = "location",
+								type = TreeItemType.LOCATION,
 								children = listOf(
-									TreeItem(id = "item-2", name = "Flour", type = "item"),
-									TreeItem(id = "item-3", name = "Sugar", type = "item"),
+									TreeItem(id = "item-2", name = "Flour", type = TreeItemType.ITEM),
+									TreeItem(id = "item-3", name = "Sugar", type = TreeItemType.ITEM),
 								),
 							),
 						),
@@ -47,8 +47,8 @@ class LocationsResourceTest {
 
 			val result = resource.read()
 			verify(client).getLocationTree(withItems = true)
-			val contents = result.contents.single() as TextResourceContents
-			val payload = contents.text ?: error("Expected text payload")
+			val contents = result.contents.single() as? TextResourceContents
+			val payload = contents?.text ?: error("Expected text payload")
 			val root = Json.parseToJsonElement(payload).jsonObject
 			val kitchen = root.getValue("Kitchen").jsonObject
 			assertEquals(3, kitchen.getValue("itemCount").jsonPrimitive.int)

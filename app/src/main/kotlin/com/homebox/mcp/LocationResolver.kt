@@ -6,7 +6,7 @@ class LocationResolver(tree: List<TreeItem>) {
 	}
 
 	private fun MutableList<ResolvedLocation>.traverse(node: TreeItem, path: List<String>) {
-		if (!node.type.equals(LOCATION_TYPE, ignoreCase = true)) {
+		if (node.type != TreeItemType.LOCATION) {
 			return
 		}
 
@@ -44,8 +44,4 @@ class LocationResolver(tree: List<TreeItem>) {
 	}
 
 	data class ResolvedLocation(val id: String, val path: List<String>)
-
-	private companion object {
-		private const val LOCATION_TYPE = "location"
-	}
 }

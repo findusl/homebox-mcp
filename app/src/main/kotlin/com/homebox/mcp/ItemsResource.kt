@@ -7,14 +7,12 @@ import java.net.URI
 import java.net.URISyntaxException
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 
 class ItemsResource(
 	private val client: HomeboxClient,
@@ -85,7 +83,7 @@ class ItemsResource(
 		}
 
 		val tree = client.getLocationTree()
-		val locationNodes = tree.filter { it.type == "location" }
+		val locationNodes = tree.filter { it.type == TreeItemType.LOCATION }
 		return if (trimmed.contains('/')) {
 			val segments = trimmed.split('/').map { it.trim() }.filter { it.isNotEmpty() }
 			if (segments.isEmpty()) {
@@ -115,7 +113,7 @@ class ItemsResource(
 		}
 
 		val segment = segments[depth]
-		val matches = nodes.filter { it.type == "location" && it.name == segment }
+		val matches = nodes.filter { it.type == TreeItemType.LOCATION && it.name == segment }
 		if (matches.isEmpty()) {
 			return emptyList()
 		}
@@ -124,7 +122,7 @@ class ItemsResource(
 			matches.map { it.id }
 		} else {
 			matches.flatMap { match ->
-				val childLocations = match.children.filter { it.type == "location" }
+				val childLocations = match.children.filter { it.type == TreeItemType.LOCATION }
 				findLocationsByPath(childLocations, segments, depth + 1)
 			}
 		}
@@ -136,13 +134,13 @@ class ItemsResource(
 		results: MutableList<String>,
 	) {
 		nodes.forEach { node ->
-			if (node.type != "location") {
+			if (node.type != TreeItemType.LOCATION) {
 				return@forEach
 			}
 			if (node.name == targetName) {
 				results += node.id
 			}
-			collectLocationsByName(node.children.filter { it.type == "location" }, targetName, results)
+			collectLocationsByName(node.children.filter { it.type == TreeItemType.LOCATION }, targetName, results)
 		}
 	}
 

@@ -2,7 +2,6 @@ package com.homebox.mcp
 
 import io.modelcontextprotocol.kotlin.sdk.ReadResourceResult
 import io.modelcontextprotocol.kotlin.sdk.TextResourceContents
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -12,7 +11,6 @@ import kotlinx.serialization.json.put
 
 class LocationsResource(
 	private val client: HomeboxClient,
-	private val json: Json = Json {},
 ) {
 	val uri: String = "resource://homebox/locations"
 	val name: String = "Homebox locations"
@@ -21,10 +19,10 @@ class LocationsResource(
 
 	suspend fun read(): ReadResourceResult {
 		val tree = client.getLocationTree(withItems = true)
-		val payload = json.encodeToString(
+		val payload = Json.encodeToString(
 			JsonObject.serializer(),
 			buildJsonObject {
-				tree.filter { it.type == "location" }.forEach { location ->
+				tree.filter { it.type == TreeItemType.LOCATION }.forEach { location ->
 					val (element, _) = buildLocationElement(location)
 					put(location.name, element)
 				}
@@ -43,19 +41,19 @@ class LocationsResource(
 	}
 
 	private fun buildLocationElement(location: TreeItem): Pair<JsonElement, Int> {
-		require(location.type == "location") { "Expected location node" }
+		require(location.type == TreeItemType.LOCATION) { "Expected location node" }
 
 		var totalItems = 0
 		val childLocations = mutableMapOf<String, JsonElement>()
 
 		location.children.forEach { child ->
 			when (child.type) {
-				"location" -> {
+				TreeItemType.LOCATION -> {
 					val (element, childCount) = buildLocationElement(child)
 					childLocations[child.name] = element
 					totalItems += childCount
 				}
-				"item" -> totalItems += 1
+				TreeItemType.ITEM -> totalItems += 1
 			}
 		}
 

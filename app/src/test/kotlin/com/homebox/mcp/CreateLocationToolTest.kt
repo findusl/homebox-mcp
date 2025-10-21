@@ -44,7 +44,7 @@ class CreateLocationToolTest {
 	fun `reuses existing locations with case insensitive match`() =
 		runTest {
 			whenever(client.getLocationTree()).thenReturn(
-				listOf(TreeItem(id = "1", name = "Home", type = "location")),
+				listOf(TreeItem(id = "1", name = "Home", type = TreeItemType.LOCATION)),
 			)
 
 			val result = tool.execute(
@@ -68,7 +68,7 @@ class CreateLocationToolTest {
 					TreeItem(
 						id = "root",
 						name = "Home",
-						type = "location",
+						type = TreeItemType.LOCATION,
 					),
 				),
 			)
@@ -112,12 +112,12 @@ class CreateLocationToolTest {
 					TreeItem(
 						id = "root",
 						name = "Home",
-						type = "location",
+						type = TreeItemType.LOCATION,
 						children = listOf(
 							TreeItem(
 								id = "storage-id",
 								name = "Storage",
-								type = "location",
+								type = TreeItemType.LOCATION,
 							),
 						),
 					),

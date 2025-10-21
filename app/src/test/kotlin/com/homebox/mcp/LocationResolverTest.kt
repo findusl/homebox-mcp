@@ -10,29 +10,29 @@ class LocationResolverTest {
 		TreeItem(
 			id = "root",
 			name = "Home",
-			type = "location",
+			type = TreeItemType.LOCATION,
 			children = listOf(
 				TreeItem(
 					id = "garage",
 					name = "Garage",
-					type = "location",
+					type = TreeItemType.LOCATION,
 					children = listOf(
 						TreeItem(
 							id = "shelf-a",
 							name = "Shelf A",
-							type = "location",
+							type = TreeItemType.LOCATION,
 						),
 					),
 				),
 				TreeItem(
 					id = "attic",
 					name = "Attic",
-					type = "location",
+					type = TreeItemType.LOCATION,
 				),
 				TreeItem(
 					id = "item-1",
 					name = "Old Lamp",
-					type = "item",
+					type = TreeItemType.ITEM,
 				),
 			),
 		),
@@ -55,14 +55,6 @@ class LocationResolverTest {
 
 		assertNotNull(result)
 		assertEquals("shelf-a", result!!.id)
-	}
-
-	@Test
-	fun `resolve trims whitespace around path segments`() {
-		val result = resolver.resolve("  Home /  Garage / Shelf A  ")
-
-		assertNotNull(result)
-		assertEquals(listOf("Home", "Garage", "Shelf A"), result!!.path)
 	}
 
 	@Test

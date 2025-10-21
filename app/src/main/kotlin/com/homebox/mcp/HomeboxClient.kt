@@ -149,9 +149,18 @@ data class LocationSummary(
 data class TreeItem(
 	val id: String,
 	val name: String,
-	val type: String,
+	val type: TreeItemType,
 	val children: List<TreeItem> = emptyList(),
 )
+
+@Serializable
+enum class TreeItemType {
+	@SerialName("location")
+	LOCATION,
+
+	@SerialName("item")
+	ITEM,
+}
 
 @Serializable
 private data class LocationCreateRequest(
