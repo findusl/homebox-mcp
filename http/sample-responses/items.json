@@ -1,0 +1,221 @@
+{
+  "page": -1,
+  "pageSize": -1,
+  "total": 5,
+  "items": [
+    {
+      "id": "88591fe6-9a06-455c-a377-9415791a165d",
+      "assetId": "000-004",
+      "name": "Ecolink Z-Wave PIR Motion Sensor",
+      "description": "Ecolink Z-Wave PIR Motion Detector Pet Immune, White (PIRZWAVE2.5-ECO)",
+      "quantity": 1,
+      "insured": false,
+      "archived": false,
+      "createdAt": "2025-10-21T19:32:56.501357145Z",
+      "updatedAt": "2025-10-21T19:32:56.502439015Z",
+      "purchasePrice": 0,
+      "location": {
+        "id": "2fee2052-fad4-4d57-a035-9d2862bc6e82",
+        "name": "Storage",
+        "description": "",
+        "createdAt": "2025-10-21T19:32:56.494270508Z",
+        "updatedAt": "2025-10-21T19:32:56.494270637Z"
+      },
+      "labels": [
+        {
+          "id": "1eb13be7-4419-4a41-a236-f43bdd71c229",
+          "name": "Home Assistant",
+          "description": "",
+          "color": "",
+          "createdAt": "2025-10-21T19:32:56.493700424Z",
+          "updatedAt": "2025-10-21T19:32:56.493700544Z"
+        },
+        {
+          "id": "83403338-b2ae-48a1-986d-c0c995b01aef",
+          "name": "IOT",
+          "description": "",
+          "color": "",
+          "createdAt": "2025-10-21T19:32:56.497718466Z",
+          "updatedAt": "2025-10-21T19:32:56.497718579Z"
+        },
+        {
+          "id": "cbb75f5a-8aef-4540-ae93-52a5426c84a4",
+          "name": "Furniture",
+          "description": "",
+          "color": "",
+          "createdAt": "2025-10-21T19:32:56.501160723Z",
+          "updatedAt": "2025-10-21T19:32:56.501160834Z"
+        }
+      ],
+      "soldTime": "0001-01-01T00:00:00Z"
+    },
+    {
+      "id": "53e26678-c475-4e15-96f2-e25beae113d5",
+      "assetId": "000-006",
+      "name": "Ribera del Duero",
+      "description": "",
+      "quantity": 12,
+      "insured": false,
+      "archived": false,
+      "createdAt": "2025-10-21T19:36:26.705349637Z",
+      "updatedAt": "2025-10-21T19:36:26.705350005Z",
+      "purchasePrice": 0,
+      "location": {
+        "id": "2fee2052-fad4-4d57-a035-9d2862bc6e82",
+        "name": "Storage",
+        "description": "",
+        "createdAt": "2025-10-21T19:32:56.494270508Z",
+        "updatedAt": "2025-10-21T19:32:56.494270637Z"
+      },
+      "labels": [
+        {
+          "id": "5f93f3ed-138a-485a-b0fc-ff6cde985401",
+          "name": "wine",
+          "description": "",
+          "color": "",
+          "createdAt": "2025-10-21T19:36:21.280548247Z",
+          "updatedAt": "2025-10-21T19:36:21.280548639Z"
+        }
+      ],
+      "soldTime": "0001-01-01T00:00:00Z"
+    },
+    {
+      "id": "25900db6-581d-43fd-820c-bc254c6b0756",
+      "assetId": "000-005",
+      "name": "Yale Security Touchscreen Deadbolt",
+      "description": "Yale Security YRD226-ZW2-619 YRD226ZW2619 Touchscreen Deadbolt, Satin Nickel",
+      "quantity": 1,
+      "insured": false,
+      "archived": false,
+      "createdAt": "2025-10-21T19:32:56.503332202Z",
+      "updatedAt": "2025-10-21T19:32:56.504287189Z",
+      "purchasePrice": 0,
+      "location": {
+        "id": "2fee2052-fad4-4d57-a035-9d2862bc6e82",
+        "name": "Storage",
+        "description": "",
+        "createdAt": "2025-10-21T19:32:56.494270508Z",
+        "updatedAt": "2025-10-21T19:32:56.494270637Z"
+      },
+      "labels": [
+        {
+          "id": "1eb13be7-4419-4a41-a236-f43bdd71c229",
+          "name": "Home Assistant",
+          "description": "",
+          "color": "",
+          "createdAt": "2025-10-21T19:32:56.493700424Z",
+          "updatedAt": "2025-10-21T19:32:56.493700544Z"
+        },
+        {
+          "id": "a137019e-0ba5-426f-b5bd-4daebbc08614",
+          "name": "Z-Wave",
+          "description": "",
+          "color": "",
+          "createdAt": "2025-10-21T19:32:56.49397294Z",
+          "updatedAt": "2025-10-21T19:32:56.493973044Z"
+        },
+        {
+          "id": "83403338-b2ae-48a1-986d-c0c995b01aef",
+          "name": "IOT",
+          "description": "",
+          "color": "",
+          "createdAt": "2025-10-21T19:32:56.497718466Z",
+          "updatedAt": "2025-10-21T19:32:56.497718579Z"
+        }
+      ],
+      "soldTime": "0001-01-01T00:00:00Z"
+    },
+    {
+      "id": "7492afea-024e-4be1-a8c4-cb41d1fed24f",
+      "assetId": "000-003",
+      "name": "Zooz 110v Power Switch",
+      "description": "Zooz Z-Wave Plus Power Switch ZEN15 for 110V AC Units, Sump Pumps, Humidifiers, and More",
+      "quantity": 1,
+      "insured": false,
+      "archived": false,
+      "createdAt": "2025-10-21T19:32:56.498750228Z",
+      "updatedAt": "2025-10-21T19:32:56.500043539Z",
+      "purchasePrice": 0,
+      "location": {
+        "id": "2fee2052-fad4-4d57-a035-9d2862bc6e82",
+        "name": "Storage",
+        "description": "",
+        "createdAt": "2025-10-21T19:32:56.494270508Z",
+        "updatedAt": "2025-10-21T19:32:56.494270637Z"
+      },
+      "labels": [
+        {
+          "id": "a137019e-0ba5-426f-b5bd-4daebbc08614",
+          "name": "Z-Wave",
+          "description": "",
+          "color": "",
+          "createdAt": "2025-10-21T19:32:56.49397294Z",
+          "updatedAt": "2025-10-21T19:32:56.493973044Z"
+        },
+        {
+          "id": "83403338-b2ae-48a1-986d-c0c995b01aef",
+          "name": "IOT",
+          "description": "",
+          "color": "",
+          "createdAt": "2025-10-21T19:32:56.497718466Z",
+          "updatedAt": "2025-10-21T19:32:56.497718579Z"
+        },
+        {
+          "id": "db4af0bb-2841-4db1-8c22-74375e44e015",
+          "name": "Wall",
+          "description": "",
+          "color": "",
+          "createdAt": "2025-10-21T19:32:56.497987427Z",
+          "updatedAt": "2025-10-21T19:32:56.497987536Z"
+        }
+      ],
+      "soldTime": "0001-01-01T00:00:00Z"
+    },
+    {
+      "id": "ae98a424-7667-422e-8ae4-0fe4dcde7c2b",
+      "assetId": "000-002",
+      "name": "Zooz Motion Sensor",
+      "description": "Zooz Z-Wave Plus S2 Motion Sensor ZSE18 with Magnetic Mount, Works with Vera and SmartThings",
+      "quantity": 1,
+      "insured": false,
+      "archived": false,
+      "createdAt": "2025-10-21T19:32:56.494588113Z",
+      "updatedAt": "2025-10-21T19:32:56.495916117Z",
+      "purchasePrice": 0,
+      "location": {
+        "id": "2fee2052-fad4-4d57-a035-9d2862bc6e82",
+        "name": "Storage",
+        "description": "",
+        "createdAt": "2025-10-21T19:32:56.494270508Z",
+        "updatedAt": "2025-10-21T19:32:56.494270637Z"
+      },
+      "labels": [
+        {
+          "id": "cad948d1-8f5a-4b02-888e-e986f1512586",
+          "name": "Decor",
+          "description": "",
+          "color": "",
+          "createdAt": "2025-10-21T19:32:56.493237494Z",
+          "updatedAt": "2025-10-21T19:32:56.493237653Z"
+        },
+        {
+          "id": "1eb13be7-4419-4a41-a236-f43bdd71c229",
+          "name": "Home Assistant",
+          "description": "",
+          "color": "",
+          "createdAt": "2025-10-21T19:32:56.493700424Z",
+          "updatedAt": "2025-10-21T19:32:56.493700544Z"
+        },
+        {
+          "id": "a137019e-0ba5-426f-b5bd-4daebbc08614",
+          "name": "Z-Wave",
+          "description": "",
+          "color": "",
+          "createdAt": "2025-10-21T19:32:56.49397294Z",
+          "updatedAt": "2025-10-21T19:32:56.493973044Z"
+        }
+      ],
+      "soldTime": "0001-01-01T00:00:00Z"
+    }
+  ]
+}

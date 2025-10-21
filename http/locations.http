@@ -1,7 +1,29 @@
-### Get location tree
+### Get locations
+GET {{baseUrl}}/api/v1/locations
+Accept: application/json
+Authorization: {{apiToken}}
+
+### Get location
+GET {{baseUrl}}/api/v1/locations/2fee2052-fad4-4d57-a035-9d2862bc6e82
+Accept: application/json
+Authorization: {{apiToken}}
+
+### Get locations tree
 GET {{baseUrl}}/api/v1/locations/tree?withItems=true
 Accept: application/json
 Authorization: {{apiToken}}
 
+### Create location
+POST https://demo.homebox.software/api/v1/locations
+Accept: application/json
+Content-Type: application/json
+
+{
+    "description": "Master Bedroom",
+    "name": "Bedroom"
+}
+
 ###
+
+
 

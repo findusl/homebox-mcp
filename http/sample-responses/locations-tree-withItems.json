@@ -1,0 +1,57 @@
+[
+  {
+    "id": "13b93290-d2a7-4edd-9aab-3547bd632aa1",
+    "name": "Kitchen",
+    "type": "location",
+    "children": []
+  },
+  {
+    "id": "2fee2052-fad4-4d57-a035-9d2862bc6e82",
+    "name": "Storage",
+    "type": "location",
+    "children": [
+      {
+        "id": "d4df3c41-5206-4e89-b038-f63074c71c75",
+        "name": "Cupboard",
+        "type": "location",
+        "children": []
+      },
+      {
+        "id": "c20fd213-5583-4afe-b5c8-6c26b4fd9648",
+        "name": "Shelf",
+        "type": "location",
+        "children": []
+      },
+      {
+        "id": "88591fe6-9a06-455c-a377-9415791a165d",
+        "name": "Ecolink Z-Wave PIR Motion Sensor",
+        "type": "item",
+        "children": []
+      },
+      {
+        "id": "53e26678-c475-4e15-96f2-e25beae113d5",
+        "name": "Ribera del Duero",
+        "type": "item",
+        "children": []
+      },
+      {
+        "id": "25900db6-581d-43fd-820c-bc254c6b0756",
+        "name": "Yale Security Touchscreen Deadbolt",
+        "type": "item",
+        "children": []
+      },
+      {
+        "id": "7492afea-024e-4be1-a8c4-cb41d1fed24f",
+        "name": "Zooz 110v Power Switch",
+        "type": "item",
+        "children": []
+      },
+      {
+        "id": "ae98a424-7667-422e-8ae4-0fe4dcde7c2b",
+        "name": "Zooz Motion Sensor",
+        "type": "item",
+        "children": []
+      }
+    ]
+  }
+]

@@ -1,0 +1,24 @@
+{
+  "id": "2fee2052-fad4-4d57-a035-9d2862bc6e82",
+  "name": "Storage",
+  "description": "",
+  "createdAt": "2025-10-21T19:32:56.494270508Z",
+  "updatedAt": "2025-10-21T19:32:56.494270637Z",
+  "children": [
+    {
+      "id": "d4df3c41-5206-4e89-b038-f63074c71c75",
+      "name": "Cupboard",
+      "description": "Cupboard on the wall",
+      "createdAt": "2025-10-21T19:54:05.757625975Z",
+      "updatedAt": "2025-10-21T19:54:05.75762639Z"
+    },
+    {
+      "id": "c20fd213-5583-4afe-b5c8-6c26b4fd9648",
+      "name": "Shelf",
+      "description": "Shelf behind the door",
+      "createdAt": "2025-10-21T19:54:14.888589444Z",
+      "updatedAt": "2025-10-21T19:54:14.888589798Z"
+    }
+  ],
+  "totalPrice": 0
+}

@@ -1,0 +1,8 @@
+### Get items
+GET {{baseUrl}}/api/v1/items
+Accept: application/json
+Authorization: {{apiToken}}
+
+###
+
+
