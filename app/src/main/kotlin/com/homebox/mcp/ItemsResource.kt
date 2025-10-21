@@ -27,123 +27,77 @@ class ItemsResource(
 
 	suspend fun read(request: ReadResourceRequest): ReadResourceResult {
 		val locationQuery = extractLocationQuery(request.uri)
-		val locationIds = locationQuery?.let { resolveLocationIds(it) }
-		val page =
-			if (locationQuery != null && locationIds?.isEmpty() == true) {
-				ItemPage(items = emptyList(), page = 1, pageSize = PAGE_SIZE, total = 0)
-			} else {
-				client.listItems(locationIds = locationIds?.takeIf { it.isNotEmpty() }, pageSize = PAGE_SIZE)
+		var resolver: LocationResolver? = null
+
+		suspend fun ensureResolver(): LocationResolver {
+			val existing = resolver
+			if (existing != null) {
+				return existing
 			}
 
-		val locationCache = mutableMapOf<String, List<String>>()
-		val items = JsonArray(
-			page.items.map { item ->
-				val path = item.location?.id?.let { resolveLocationPath(it, locationCache) } ?: emptyList()
+			val tree = client.getLocationTree()
+			val created = LocationResolver(tree)
+			resolver = created
+			return created
+		}
+
+		suspend fun buildResult(page: ItemPage): ReadResourceResult {
+			val items = JsonArray(
+				page.items.map { item ->
+					val path = item.location?.id?.let { locationId ->
+						ensureResolver().resolve(locationId)?.path ?: emptyList()
+					} ?: emptyList()
+					buildJsonObject {
+						put("id", JsonPrimitive(item.id))
+						put("name", JsonPrimitive(item.name))
+						put("quantity", item.quantity?.let { JsonPrimitive(it) } ?: JsonNull)
+						put("description", item.description?.let { JsonPrimitive(it) } ?: JsonNull)
+						put("locationPath", JsonArray(path.map { JsonPrimitive(it) }))
+					}
+				},
+			)
+
+			val payload = json.encodeToString(
+				JsonObject.serializer(),
 				buildJsonObject {
-					put("id", JsonPrimitive(item.id))
-					put("name", JsonPrimitive(item.name))
-					put("quantity", item.quantity?.let { JsonPrimitive(it) } ?: JsonNull)
-					put("description", item.description?.let { JsonPrimitive(it) } ?: JsonNull)
-					put("locationPath", JsonArray(path.map { JsonPrimitive(it) }))
-				}
-			},
-		)
+					put("items", items)
+					val moreAvailable = page.total > page.page * page.pageSize
+					put("moreAvailable", JsonPrimitive(moreAvailable))
+				},
+			)
 
-		val payload = json.encodeToString(
-			JsonObject.serializer(),
-			buildJsonObject {
-				put("items", items)
-				val moreAvailable = page.total > page.page * page.pageSize
-				put("moreAvailable", JsonPrimitive(moreAvailable))
-			},
-		)
-
-		return ReadResourceResult(
-			contents = listOf(
-				TextResourceContents(
-					text = payload,
-					uri = uri,
-					mimeType = mimeType,
+			return ReadResourceResult(
+				contents = listOf(
+					TextResourceContents(
+						text = payload,
+						uri = uri,
+						mimeType = mimeType,
+					),
 				),
-			),
-		)
-	}
-
-	private suspend fun resolveLocationPath(locationId: String, cache: MutableMap<String, List<String>>): List<String> {
-		cache[locationId]?.let { return it }
-		val details = client.getLocation(locationId)
-		val parentPath = details.parent?.id?.let { resolveLocationPath(it, cache) } ?: emptyList()
-		val path = parentPath + details.name
-		cache[locationId] = path
-		return path
-	}
-
-	private suspend fun resolveLocationIds(query: String): List<String> {
-		val trimmed = query.trim()
-		if (trimmed.isEmpty()) {
-			return emptyList()
+			)
 		}
 
-		val tree = client.getLocationTree()
-		val locationNodes = tree.filter { it.type == "location" }
-		return if (trimmed.contains('/')) {
-			val segments = trimmed.split('/').map { it.trim() }.filter { it.isNotEmpty() }
-			if (segments.isEmpty()) {
-				emptyList()
+		val locationIds =
+			if (locationQuery != null) {
+				val resolved = ensureResolver().resolve(locationQuery)
+				if (resolved == null) {
+					return buildResult(
+						ItemPage(
+							items = emptyList(),
+							page = 1,
+							pageSize = PAGE_SIZE,
+							total = 0,
+						),
+					)
+				}
+				listOf(resolved.id)
 			} else {
-				findLocationsByPath(locationNodes, segments, 0)
+				null
 			}
-		} else {
-			val rootMatches = locationNodes.filter { it.name == trimmed }
-			if (rootMatches.isNotEmpty()) {
-				rootMatches.map { it.id }
-			} else {
-				val results = mutableListOf<String>()
-				collectLocationsByName(locationNodes, trimmed, results)
-				results
-			}
-		}
-	}
 
-	private fun findLocationsByPath(
-		nodes: List<TreeItem>,
-		segments: List<String>,
-		depth: Int,
-	): List<String> {
-		if (depth >= segments.size) {
-			return emptyList()
-		}
+		val page = client.listItems(locationIds = locationIds, pageSize = PAGE_SIZE)
 
-		val segment = segments[depth]
-		val matches = nodes.filter { it.type == "location" && it.name == segment }
-		if (matches.isEmpty()) {
-			return emptyList()
-		}
-
-		return if (depth == segments.lastIndex) {
-			matches.map { it.id }
-		} else {
-			matches.flatMap { match ->
-				val childLocations = match.children.filter { it.type == "location" }
-				findLocationsByPath(childLocations, segments, depth + 1)
-			}
-		}
-	}
-
-	private fun collectLocationsByName(
-		nodes: List<TreeItem>,
-		targetName: String,
-		results: MutableList<String>,
-	) {
-		nodes.forEach { node ->
-			if (node.type != "location") {
-				return@forEach
-			}
-			if (node.name == targetName) {
-				results += node.id
-			}
-			collectLocationsByName(node.children.filter { it.type == "location" }, targetName, results)
-		}
+		return buildResult(page)
 	}
 
 	private fun extractLocationQuery(rawUri: String): String? {

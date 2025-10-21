@@ -52,20 +52,34 @@ class ItemsResourceTest {
 					total = 150,
 				),
 			)
-			whenever(client.getLocation("loc-1")).thenReturn(
-				LocationDetails(id = "loc-1", name = "Shelf A", parent = LocationSummary(id = "loc-0", name = "Basement")),
+			whenever(client.getLocationTree()).thenReturn(
+				listOf(
+					TreeItem(
+						id = "root",
+						name = "Home",
+						type = "location",
+						children = listOf(
+							TreeItem(
+								id = "loc-0",
+								name = "Basement",
+								type = "location",
+								children = listOf(
+									TreeItem(
+										id = "loc-1",
+										name = "Shelf A",
+										type = "location",
+									),
+								),
+							),
+						),
+					),
+				),
 			)
-			whenever(client.getLocation("loc-0")).thenReturn(
-				LocationDetails(id = "loc-0", name = "Basement", parent = LocationSummary(id = "root", name = "Home")),
-			)
-			whenever(client.getLocation("root")).thenReturn(LocationDetails(id = "root", name = "Home", parent = null))
 
 			val result = resource.read(ReadResourceRequest("resource://homebox/items", buildJsonObject { }))
 
 			verify(client).listItems(locationIds = null, pageSize = 100)
-			verify(client).getLocation("loc-1")
-			verify(client).getLocation("loc-0")
-			verify(client).getLocation("root")
+			verify(client).getLocationTree()
 
 			val contents = result.contents.single() as TextResourceContents
 			val payload = requireNotNull(contents.text)
@@ -107,9 +121,6 @@ class ItemsResourceTest {
 					total = 1,
 				),
 			)
-			whenever(client.getLocation("loc-2")).thenReturn(LocationDetails(id = "loc-2", name = "Basement", parent = LocationSummary(id = "root", name = "Home")))
-			whenever(client.getLocation("root")).thenReturn(LocationDetails(id = "root", name = "Home", parent = null))
-
 			val request = ReadResourceRequest("resource://homebox/items?location=Home/Basement", buildJsonObject { })
 			val result = resource.read(request)
 
