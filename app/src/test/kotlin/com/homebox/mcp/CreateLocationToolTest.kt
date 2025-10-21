@@ -5,7 +5,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -37,7 +36,7 @@ class CreateLocationToolTest {
 		runTest {
 			val result = tool.execute(buildJsonObject {})
 			val text = (result.content.first() as TextContent).text ?: ""
-			assertTrue(text.contains("path"))
+			assertContains(text, "path")
 			verify(client, never()).getLocationTree()
 		}
 
@@ -55,8 +54,8 @@ class CreateLocationToolTest {
 			)
 
 			val text = (result.content.first() as TextContent).text ?: ""
-			assertTrue(text.contains("already exists"))
-			assertTrue(text.contains("Location \"Home\""))
+			assertContains(text, "already exists")
+			assertContains(text, "Location \"Home\"")
 			verify(client).getLocationTree()
 			verify(client, never()).createLocation(any(), anyOrNull(), anyOrNull())
 		}
@@ -95,8 +94,8 @@ class CreateLocationToolTest {
 			)
 
 			val text = (result.content.first() as TextContent).text ?: ""
-			assertTrue(text.contains("Created locations: Storage ; Shelf A."))
-			assertTrue(text.contains("Full path: Home / storage / Shelf A"))
+			assertContains(text, "Created locations: Storage ; Shelf A.")
+			assertContains(text, "Full path: Home / storage / Shelf A")
 
 			inOrder(client).apply {
 				verify(client).getLocationTree()
@@ -133,7 +132,7 @@ class CreateLocationToolTest {
 
 			val text = (result.content.first() as TextContent).text ?: ""
 
-			assertTrue(text.contains("already exists"))
+			assertContains(text, "already exists")
 			verify(client).getLocationTree()
 			verify(client, never()).createLocation(any(), anyOrNull(), anyOrNull())
 		}

@@ -64,8 +64,7 @@ class HomeboxClient(
 			setBody(LocationCreateRequest(name = name, description = description, parentId = parentId))
 		}
 
-		val payload = response.bodyAsText()
-		return json.decodeFromString(LocationSummary.serializer(), payload)
+		return json.decodeFromString<LocationSummary>(response.bodyAsText())
 	}
 
 	suspend fun listItems(

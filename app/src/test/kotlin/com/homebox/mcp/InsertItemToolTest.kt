@@ -43,7 +43,7 @@ class InsertItemToolTest {
 				},
 			)
 			val text = (result.content.first() as TextContent).text.orEmpty()
-			assertTrue(text.contains("name"))
+			assertContains(text, "name")
 			verify(client, never()).listItems(anyOrNull(), anyOrNull(), any())
 		}
 
@@ -56,7 +56,7 @@ class InsertItemToolTest {
 				},
 			)
 			val text = (result.content.first() as TextContent).text.orEmpty()
-			assertTrue(text.contains("location"))
+			assertContains(text, "location")
 			verify(client, never()).listItems(anyOrNull(), anyOrNull(), any())
 		}
 
@@ -106,7 +106,7 @@ class InsertItemToolTest {
 			)
 
 			val text = (result.content.first() as TextContent).text.orEmpty()
-			assertTrue(text.contains("already exists"))
+			assertContains(text, "already exists")
 			verify(client).listItems(query = eq("Hammer"), locationIds = anyOrNull(), pageSize = eq(50))
 			verify(client, never()).getLocationTree()
 			verify(client, never()).createItem(any(), any(), anyOrNull())
@@ -179,9 +179,9 @@ class InsertItemToolTest {
 			)
 
 			val text = (result.content.first() as TextContent).text.orEmpty()
-			assertTrue(text.contains("Created item \"Hammer\""))
-			assertTrue(text.contains("Home / Garage"))
-			assertTrue(text.contains("Quantity defaults to 1"))
+			assertContains(text, "Created item \"Hammer\"")
+			assertContains(text, "Home / Garage")
+			assertContains(text, "Quantity defaults to 1")
 
 			verify(client).createItem(name = eq("Hammer"), locationId = eq("garage"), description = anyOrNull())
 			verify(client, never()).updateItemQuantity(any(), any())
@@ -221,7 +221,7 @@ class InsertItemToolTest {
 			)
 
 			val text = (result.content.first() as TextContent).text.orEmpty()
-			assertTrue(text.contains("Quantity set to 3"))
+			assertContains(text, "Quantity set to 3")
 
 			verify(client).updateItemQuantity("item-123", 3)
 		}

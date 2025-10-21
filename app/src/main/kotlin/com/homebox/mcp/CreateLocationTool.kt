@@ -33,38 +33,26 @@ class CreateLocationTool(private val client: HomeboxClient) {
 			return textResult("Path must include at least one non-empty location segment.")
 		}
 
-		val tree = client.getLocationTree()
-		var currentParentId: String? = null
-		var currentChildren = tree.filterLocations()
-		var currentName: String? = null
+		val topLevelLocations = client.getLocationTree()
+		var parentPointer = KnownLocation(null, topLevelLocations)
 		val createdLocations = mutableListOf<LocationSummary>()
-		val knownLocationsByParent = mutableMapOf<String?, MutableMap<String, KnownLocation>>()
-
 		segments.forEachIndexed { index, segment ->
-			knownLocationsByParent.ensureParentChildren(currentParentId, currentChildren)
-			val normalizedSegment = segment.lowercase()
-			val knownSibling = knownLocationsByParent[currentParentId]?.get(normalizedSegment)
-			if (knownSibling != null) {
-				currentParentId = knownSibling.id
-				currentName = knownSibling.name
-				currentChildren = knownSibling.children.filterLocations()
+			val existingLocation = parentPointer.children.find { it.name.equals(segment, ignoreCase = true) }
+			if (existingLocation != null) {
+				parentPointer = KnownLocation(existingLocation.id, existingLocation.children)
 				return@forEachIndexed
 			}
-
 			val isLast = index == segments.lastIndex
 			val created = client.createLocation(
 				name = segment,
-				parentId = currentParentId,
+				parentId = parentPointer.id,
 				description = if (isLast) description else null,
 			)
+			parentPointer = KnownLocation(created.id, emptyList())
 			createdLocations += created
-			knownLocationsByParent.recordCreated(currentParentId, created)
-			currentParentId = created.id
-			currentName = created.name
-			currentChildren = emptyList()
 		}
 
-		val finalName = currentName ?: segments.last()
+		val finalName = segments.last()
 		val fullPath = segments.joinToString(separator = " / ")
 		val message = if (createdLocations.isEmpty()) {
 			"""Location "$finalName" already exists at path: $fullPath."""
@@ -77,36 +65,6 @@ class CreateLocationTool(private val client: HomeboxClient) {
 		return textResult(message)
 	}
 
-	private fun List<TreeItem>.filterLocations(): List<TreeItem> = filter { it.type.equals(LOCATION_TYPE, ignoreCase = true) }
-
-	private fun MutableMap<String?, MutableMap<String, KnownLocation>>.ensureParentChildren(parentId: String?, children: List<TreeItem>) {
-		if (children.isEmpty()) {
-			return
-		}
-		val parentMap = getOrPut(parentId) { mutableMapOf() }
-		children
-			.filter { it.type.equals(LOCATION_TYPE, ignoreCase = true) }
-			.forEach { child ->
-				val key = child.name.lowercase()
-				parentMap.putIfAbsent(
-					key,
-					KnownLocation(
-						id = child.id,
-						name = child.name,
-						children = child.children,
-					),
-				)
-			}
-	}
-
-	private fun MutableMap<String?, MutableMap<String, KnownLocation>>.recordCreated(parentId: String?, created: LocationSummary) {
-		val parentMap = getOrPut(parentId) { mutableMapOf() }
-		parentMap.putIfAbsent(
-			created.name.lowercase(),
-			KnownLocation(id = created.id, name = created.name, children = emptyList()),
-		)
-	}
-
 	@Serializable
 	@Title("Create location arguments")
 	private data class CreateLocationParameters(
@@ -116,13 +74,8 @@ class CreateLocationTool(private val client: HomeboxClient) {
 		val description: String? = null,
 	)
 
-	private companion object {
-		private const val LOCATION_TYPE = "location"
-	}
-
 	private data class KnownLocation(
-		val id: String,
-		val name: String,
+		val id: String?,
 		val children: List<TreeItem>,
 	)
 }
