@@ -46,7 +46,7 @@ class InsertItemTool(private val client: HomeboxClient) {
 		}
 
 		val locationTree = client.getLocationTree()
-		val resolvedLocation = resolveLocation(location, locationTree)
+		val resolvedLocation = LocationResolver(locationTree).resolve(location)
 			?: return textResult("Location '$location' was not found.")
 
 		val createdItem = client.createItem(
@@ -72,35 +72,6 @@ class InsertItemTool(private val client: HomeboxClient) {
 		return CallToolResult(content = listOf(TextContent(message)))
 	}
 
-	private fun resolveLocation(rawLocation: String, tree: List<TreeItem>): ResolvedLocation? {
-		val flattened = mutableListOf<ResolvedLocation>()
-
-		fun traverse(node: TreeItem, path: List<String>) {
-			if (!node.type.equals(LOCATION_TYPE, ignoreCase = true)) {
-				return
-			}
-			val currentPath = path + node.name
-			flattened += ResolvedLocation(id = node.id, path = currentPath)
-			node.children.forEach { traverse(it, currentPath) }
-		}
-
-		tree.forEach { traverse(it, emptyList()) }
-
-		flattened.firstOrNull { it.id == rawLocation }?.let { return it }
-
-		val segments = rawLocation.split('/').map { it.trim() }.filter { it.isNotEmpty() }
-		if (segments.isEmpty()) {
-			return null
-		}
-
-		return flattened.firstOrNull { resolved ->
-			if (resolved.path.size != segments.size) {
-				return@firstOrNull false
-			}
-			resolved.path.zip(segments).all { (actual, expected) -> actual.equals(expected, ignoreCase = true) }
-		}
-	}
-
 	@Serializable
 	@Title("Insert item arguments")
 	private data class InsertItemParameters(
@@ -115,10 +86,7 @@ class InsertItemTool(private val client: HomeboxClient) {
 		val description: String? = null,
 	)
 
-	private data class ResolvedLocation(val id: String, val path: List<String>)
-
 	private companion object {
-		private const val LOCATION_TYPE = "location"
 		private const val DEFAULT_QUANTITY = 1
 		private const val DUPLICATE_CHECK_PAGE_SIZE = 50
 	}
