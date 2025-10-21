@@ -1,27 +1,16 @@
 package com.homebox.mcp
 
-class LocationResolver(tree: List<TreeItem>) {
-	private val locations: List<ResolvedLocation> = buildList {
-		tree.forEach { traverse(it, emptyList()) }
-	}
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
-	private fun MutableList<ResolvedLocation>.traverse(node: TreeItem, path: List<String>) {
-		if (node.type != TreeItemType.LOCATION) {
-			return
+private val UUID_REGEX = Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
+
+@OptIn(ExperimentalUuidApi::class)
+class LocationResolver(private val tree: List<TreeItem>) {
+	fun resolve(normalized: String): ResolvedLocation? {
+		if (normalized.length == 36 && UUID_REGEX.matches(normalized)) {
+			return resolveById(Uuid.parse(normalized), tree)
 		}
-
-		val currentPath = path + node.name
-		add(ResolvedLocation(id = node.id, path = currentPath))
-		node.children.forEach { traverse(it, currentPath) }
-	}
-
-	fun resolve(rawLocation: String): ResolvedLocation? {
-		val normalized = rawLocation.trim()
-		if (normalized.isEmpty()) {
-			return null
-		}
-
-		locations.firstOrNull { it.id == normalized }?.let { return it }
 
 		val segments = normalized
 			.split('/')
@@ -32,15 +21,36 @@ class LocationResolver(tree: List<TreeItem>) {
 			return null
 		}
 
-		return locations.firstOrNull { candidate ->
-			if (candidate.path.size != segments.size) {
-				return@firstOrNull false
-			}
+		val id = resolve(segments, tree) ?: return null
 
-			candidate.path.zip(segments).all { (actual, expected) ->
-				actual.equals(expected, ignoreCase = true)
-			}
+		return ResolvedLocation(id, segments)
+	}
+
+	private fun resolve(segments: List<String>, currentNodes: List<TreeItem>): String? {
+		val node = currentNodes
+			.filter { it.type == TreeItemType.LOCATION }
+			.find { it.name.equals(segments[0], ignoreCase = true) } ?: return null
+
+		if (segments.size == 1) {
+			return node.id
 		}
+
+		return resolve(segments.subList(1, segments.size), node.children)
+	}
+
+	private fun resolveById(id: Uuid, nodes: List<TreeItem>): ResolvedLocation? {
+		nodes
+			.filter { it.type == TreeItemType.LOCATION }
+			.forEach { node ->
+				if (node.id == id.toString()) {
+					return ResolvedLocation(node.id, listOf(node.name))
+				}
+				val foundChild = resolveById(id, node.children)
+				if (foundChild != null) {
+					return ResolvedLocation(foundChild.id, listOf(node.name) + foundChild.path)
+				}
+			}
+		return null
 	}
 
 	data class ResolvedLocation(val id: String, val path: List<String>)
