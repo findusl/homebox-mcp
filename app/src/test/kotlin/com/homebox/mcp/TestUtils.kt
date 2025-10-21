@@ -13,5 +13,8 @@ fun Tool.Input.assertHasParameter(name: String, type: String) {
 	assertEquals(type, parameter.jsonObject["type"]?.jsonPrimitive?.content)
 }
 
-fun assertContains(fullString: String, actual: String, ignoreCase: Boolean = true) =
-	assertTrue(fullString.contains(actual, ignoreCase), "String \"$fullString\" did not contain \"$actual\"")
+fun assertContains(
+	fullString: String,
+	actual: String,
+	ignoreCase: Boolean = true,
+) = assertTrue(fullString.contains(actual, ignoreCase), "String \"$fullString\" did not contain \"$actual\"")
