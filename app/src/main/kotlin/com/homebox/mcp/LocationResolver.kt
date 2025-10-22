@@ -7,6 +7,9 @@ private val UUID_REGEX = Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-
 
 @OptIn(ExperimentalUuidApi::class)
 class LocationResolver(private val tree: List<TreeItem>) {
+	/**
+	 * Resolve a location based on an id or a slash-separated path.
+	 */
 	fun resolve(normalized: String): ResolvedLocation? {
 		if (normalized.length == 36 && UUID_REGEX.matches(normalized)) {
 			return resolveById(Uuid.parse(normalized), tree)
@@ -26,17 +29,19 @@ class LocationResolver(private val tree: List<TreeItem>) {
 		return ResolvedLocation(id, segments)
 	}
 
-	fun resolveMultiplePossible(normalized: String): List<ResolvedLocation> {
-		val single = resolve(normalized)
-		if (single != null) {
-			return listOf(single)
-		} else if (normalized.length == 36 && UUID_REGEX.matches(normalized)) {
-			return listOf()
-		} else if (normalized.contains('/')) {
-			return listOf()
-		}
-
-		return resolveByName(normalized, tree, listOf())
+	private fun resolveById(id: Uuid, nodes: List<TreeItem>): ResolvedLocation? {
+		nodes
+			.filter { it.type == TreeItemType.LOCATION }
+			.forEach { node ->
+				if (node.id == id) {
+					return ResolvedLocation(node.id, listOf(node.name))
+				}
+				val foundChild = resolveById(id, node.children)
+				if (foundChild != null) {
+					return ResolvedLocation(foundChild.id, listOf(node.name) + foundChild.path)
+				}
+			}
+		return null
 	}
 
 	private fun resolve(segments: List<String>, currentNodes: List<TreeItem>): Uuid? {
@@ -49,6 +54,23 @@ class LocationResolver(private val tree: List<TreeItem>) {
 		}
 
 		return resolve(segments.subList(1, segments.size), node.children)
+	}
+
+	/**
+	 * In addition to using [resolve], this will fall back to finding all locations with the provided name.
+	 * The fallback can return multiple matches.
+	 */
+	fun resolveMultiplePossible(normalized: String): List<ResolvedLocation> {
+		val single = resolve(normalized)
+		if (single != null) {
+			return listOf(single)
+		} else if (normalized.length == 36 && UUID_REGEX.matches(normalized)) {
+			return listOf()
+		} else if (normalized.contains('/')) {
+			return listOf()
+		}
+
+		return resolveByName(normalized, tree, listOf())
 	}
 
 	private fun resolveByName(
@@ -67,21 +89,6 @@ class LocationResolver(private val tree: List<TreeItem>) {
 					foundChildren
 				}
 			}
-
-	private fun resolveById(id: Uuid, nodes: List<TreeItem>): ResolvedLocation? {
-		nodes
-			.filter { it.type == TreeItemType.LOCATION }
-			.forEach { node ->
-				if (node.id == id) {
-					return ResolvedLocation(node.id, listOf(node.name))
-				}
-				val foundChild = resolveById(id, node.children)
-				if (foundChild != null) {
-					return ResolvedLocation(foundChild.id, listOf(node.name) + foundChild.path)
-				}
-			}
-		return null
-	}
 
 	data class ResolvedLocation(val id: Uuid, val path: List<String>)
 }
