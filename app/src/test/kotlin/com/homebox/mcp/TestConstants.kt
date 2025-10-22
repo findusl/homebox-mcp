@@ -10,6 +10,4 @@ object TestConstants {
 	val TEST_ID_3 = Uuid.random()
 	val TEST_ID_4 = Uuid.random()
 	val TEST_ID_5 = Uuid.random()
-	val TEST_ID_6 = Uuid.random()
-	val TEST_ID_7 = Uuid.random()
 }
