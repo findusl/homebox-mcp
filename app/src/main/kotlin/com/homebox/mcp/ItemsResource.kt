@@ -89,65 +89,8 @@ class ItemsResource(
 		}
 
 		val tree = client.getLocationTree()
-		val locationNodes = tree.filter { it.type == TreeItemType.LOCATION }
-		return if (trimmed.contains('/')) {
-			val segments = trimmed.split('/').map { it.trim() }.filter { it.isNotEmpty() }
-			if (segments.isEmpty()) {
-				emptyList()
-			} else {
-				findLocationsByPath(locationNodes, segments, 0)
-			}
-		} else {
-			val rootMatches = locationNodes.filter { it.name == trimmed }
-			if (rootMatches.isNotEmpty()) {
-				rootMatches.map { it.id }
-			} else {
-				val results = mutableListOf<Uuid>()
-				collectLocationsByName(locationNodes, trimmed, results)
-				results
-			}
-		}
-	}
-
-	private fun findLocationsByPath(
-		nodes: List<TreeItem>,
-		segments: List<String>,
-		depth: Int,
-	): List<Uuid> {
-		if (depth >= segments.size) {
-			return emptyList()
-		}
-
-		val segment = segments[depth]
-		val matches = nodes.filter { it.type == TreeItemType.LOCATION && it.name == segment }
-		if (matches.isEmpty()) {
-			return emptyList()
-		}
-
-		return if (depth == segments.lastIndex) {
-			matches.map { it.id }
-		} else {
-			matches.flatMap { match ->
-				val childLocations = match.children.filter { it.type == TreeItemType.LOCATION }
-				findLocationsByPath(childLocations, segments, depth + 1)
-			}
-		}
-	}
-
-	private fun collectLocationsByName(
-		nodes: List<TreeItem>,
-		targetName: String,
-		results: MutableList<Uuid>,
-	) {
-		nodes.forEach { node ->
-			if (node.type != TreeItemType.LOCATION) {
-				return@forEach
-			}
-			if (node.name == targetName) {
-				results += node.id
-			}
-			collectLocationsByName(node.children.filter { it.type == TreeItemType.LOCATION }, targetName, results)
-		}
+		val resolver = LocationResolver(tree)
+		return resolver.resolveMultiplePossible(trimmed).map { it.id }
 	}
 
 	private fun extractLocationQuery(rawUri: String): String? {
