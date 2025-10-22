@@ -156,7 +156,7 @@ data class Location(
 	val id: Uuid,
 	val name: String,
 	val description: String? = null,
-	@SerialName("itemCount") val itemCount: Int? = null,
+	val itemCount: Int? = null,
 )
 
 @Serializable
