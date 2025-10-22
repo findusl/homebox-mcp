@@ -26,6 +26,19 @@ class LocationResolver(private val tree: List<TreeItem>) {
 		return ResolvedLocation(id, segments)
 	}
 
+	fun resolveMultiplePossible(normalized: String): List<ResolvedLocation> {
+		val single = resolve(normalized)
+		if (single != null) {
+			return listOf(single)
+		} else if (normalized.length == 36 && UUID_REGEX.matches(normalized)) {
+			return listOf()
+		} else if (normalized.contains('/')) {
+			return listOf()
+		}
+
+		return resolveByName(normalized, tree, listOf())
+	}
+
 	private fun resolve(segments: List<String>, currentNodes: List<TreeItem>): Uuid? {
 		val node = currentNodes
 			.filter { it.type == TreeItemType.LOCATION }
@@ -37,6 +50,23 @@ class LocationResolver(private val tree: List<TreeItem>) {
 
 		return resolve(segments.subList(1, segments.size), node.children)
 	}
+
+	private fun resolveByName(
+		query: String,
+		nodes: List<TreeItem>,
+		path: List<String>,
+	): List<ResolvedLocation> =
+		nodes
+			.filter { it.type == TreeItemType.LOCATION }
+			.flatMap { node ->
+				val currentPath = path + node.name
+				val foundChildren = resolveByName(query, node.children, currentPath)
+				if (node.name.equals(query, ignoreCase = true)) {
+					foundChildren + ResolvedLocation(node.id, currentPath)
+				} else {
+					foundChildren
+				}
+			}
 
 	private fun resolveById(id: Uuid, nodes: List<TreeItem>): ResolvedLocation? {
 		nodes
