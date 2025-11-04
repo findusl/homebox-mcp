@@ -1,3 +1,7 @@
+# ARCHIVED
+
+For my purpose a client with tools is more appropriate than an MCP server. Therefore I will work on https://github.com/findusl/homebox-client when time permits.
+
 
 # Homebox MCP
 
